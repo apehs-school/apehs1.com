@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ardenne Preparatory & Extension High School | PRINCIPAL</title>
+
+    <!-- AOS Animation Library -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+
+    <!-- Your Main Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+ <div class="top-bar">
+    <img src="images/logo2.1.png" alt="Ardenne Preparatory and Extension High School Logo" class="school-logo">
+
+    <div class="top-left">
+        <a href="payment.html" class="payment-btn">MAKE A PAYMENT</a>
+    </div>
+
+    <img src="images/cog.png" alt="Church Of God Logo" class="cog-logo">
+</div>
+
+    <nav aria-label="Main Navigation">
+        <a href="index.html">HOME</a>
+
+        <div class="dropdown">
+            <a href="aboutus.html" class="dropbtn">ABOUT US &#9662;</a>
+            <div class="dropdown-content">
+				<a href="principal.html">PRINCIPAL'S MESSAGE</a>
+				<a href="staff.html">ACADEMIC STAFF</a>
+				<a href="history.html">HISTORY & MILESTONE</a>
+                <a href="mission.html">MISSION</a>
+                <a href="vision.html">VISION</a>
+                <a href="core.html">CORE VALUES</a>
+                <a href="goals.html">GOALS</a>
+                <a href="motto.html">MOTTO</a>
+                <a href="song.html">SCHOOL SONG</a>
+            </div>
+  </div>
+        <!-- Academics Dropdown -->
+        <div class="dropdown">
+            <a href="academics.html" class="dropbtn">ACADEMICS &#9662;</a>
+            <div class="dropdown-content">
+                <a href="awards.html">AWARDS AND ACHIEVEMENTS</a>
+				<a href="admissions.html">ADMISSION</a>
+				<a href="scholarship.html">SCHOLARSHIP AWARDED</a>
+            </div>
+        </div>
+        <a href="calendar.html">CALENDAR OF EVENTS</a>
+        <a href="extra.html">EXTRACURRICULAR ACTIVITIES</a>
+		<a href="menu.html">TODAY'S LUNCH MENU</a>
+        <a href="contact.html">CONTACT US</a>
+    </nav>
+</header>
+
+<!-- DEVOTIONAL FLOATING TAB -->
+<div id="devotional-tap" class="devotional-tap">
+    <button class="close-btn" id="close-devotional" aria-label="Close devotional">&times;</button>
+    <h4>Word for Today</h4>
+    <p>“Trust in the Lord with all your heart and lean not on your own understanding.” – Proverbs 3:5</p>
+    <a href="word.html" class="btn">Read More</a>
+</div>
+
+<section class="team" data-aos="fade-up">
+    <div class="principal-card">
+        <h2 class="section-title">Message from the Principal</h2>
+
+        <div class="principal-header">
+		<img src="images/pp.jpg" alt="Principal">
+            <h3>Mrs. Dorothy Britton-McKenzie</h3>
+            <p class="principal-credentials">BSc (Hons), MSc</p>
+        </div>
+
+        <p class="team-intro">
+            Welcome to <strong>Ardenne Preparatory and Extension High School</strong> — 
+            a vibrant learning community grounded in strong Christian values and a commitment to excellence.
+        </p>
+
+        <p>
+            As Principal, I am deeply honoured to lead an institution that nurtures academic achievement, 
+            emotional growth, spiritual development, and social responsibility. 
+            Our vision is to cultivate a community that treasures excellence, mutual respect, 
+            emotional empowerment, and meaningful opportunities for every child to thrive.
+        </p>
+
+        <p>
+            Our dedicated and passionate staff work tirelessly to equip students with the knowledge, 
+            character, and life skills necessary for success in an ever-evolving world. 
+            We are committed to developing confident, responsible citizens who will make a positive 
+            impact in their communities and beyond.
+        </p>
+
+        <p>
+            We invite you to explore our website to learn more about our core values, 
+            outstanding achievements, dynamic curriculum, and enriching co-curricular activities.
+        </p>
+
+        <p class="closing-message">
+            Together, let us partner in shaping bright futures. 
+            At Ardenne, every child is valued, supported, and inspired to reach their fullest potential.
+        </p>
+    </div>
+</section>
+
+<footer>
+    <p>&copy; 2026 Ardenne Preparatory & Extension High School. All Rights Reserved.</p>
+</footer>
+
+<!-- Scripts -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init({
+        duration: 1000,
+        once: true
+    });
+
+    // Devotional Close Button
+    document.getElementById("close-devotional").addEventListener("click", function () {
+        document.getElementById("devotional-tap").style.display = "none";
+    });
+</script>
+
+</body>
+</html>

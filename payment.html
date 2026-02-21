@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ardenne Preparatory and Extension High School | PAYMENT</title>
+
+<link rel="stylesheet" href="style.css">
+
+<!-- Google Font -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+<!-- AOS Animation Library -->
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css"/>
+
+</head>
+
+<body>
+
+<header>
+<div class="top-bar">
+    <img src="images/logo2.1.png" alt="Ardenne Preparatory and Extension High School Logo" class="school-logo">
+
+    <div class="top-left">
+        <a href="payment.html" class="payment-btn">MAKE A PAYMENT</a>
+    </div>
+
+    <img src="images/cog.png" alt="Church Of God Logo" class="cog-logo">
+</div>
+
+    <nav>
+        <a href="index.html">HOME</a>
+         <!-- About Dropdown -->
+ <div class="dropdown">
+        <a href="aboutus.html"class="dropbtn">ABOUT US &#9662;</a>
+        <div class="dropdown-content">
+		    <a href="principal.html">PRINCIPAL'S MESSAGE</a>
+			<a href="staff.html">ACADEMIC STAFF</a>
+            <a href="history.html">HISTORY & MILESTONE</a>
+            <a href="mission.html">MISSION</a>
+			<a href="vision.html">VISION</a>
+			<a href="core.html">CORE VALUES</a>
+			<a href="goals.html">GOALS</a>
+			<a href="motto.html">MOTTO</a>
+			<a href="song.html">SCHOOL SONG</a>			
+        </div>
+  </div>
+        <!-- Academics Dropdown -->
+        <div class="dropdown">
+            <a href="academics.html" class="dropbtn">ACADEMICS &#9662;</a>
+            <div class="dropdown-content">
+                <a href="awards.html">AWARDS AND ACHIEVEMENTS</a>
+				<a href="admissions.html">ADMISSION</a>
+				<a href="scholarship.html">SCHOLARSHIP AWARDED</a>
+            </div>
+        </div>
+        <a href="calendar.html">CALENDAR OF EVENTS</a>
+        <a href="extra.html">EXTRACURRICULAR ACTIVITIES</a>
+		<a href="menu.html">TODAY'S LUNCH MENU</a>
+        <a href="contact.html">CONTACT US</a>
+    </nav>
+</header>
+<section class="academics" data-aos="zoom-in">
+    <h2>Make a Payment</h2>
+    <form action="#" method="POST">
+        <p>
+            <label for="name">Full Name:</label><br>
+            <input type="text" id="name" name="name" required>
+        </p>
+        <p>
+            <label for="student">Student Name:</label><br>
+            <input type="text" id="student" name="student" required>
+        </p>
+        <p>
+            <label for="amount">Amount (JMD):</label><br>
+            <input type="number" id="amount" name="amount" required>
+        </p>
+        <p>
+            <label for="method">Payment Method:</label><br>
+            <select id="method" name="method" required>
+                <option value="card">Credit/Debit Card</option>
+                <option value="paypal">PayPal</option>
+                <option value="bank">Bank Transfer</option>
+            </select>
+        </p>
+        <p><button type="submit" class="btn">Pay Now</button></p>
+    </form>
+</section>
+
+<footer>
+    <p>© 2026 Ardenne Preparatory and Extension High School</p>
+</footer>
+
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
