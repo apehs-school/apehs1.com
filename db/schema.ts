@@ -1,0 +1,187 @@
+import { boolean, date, integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+
+export const userRole = pgEnum("user_role", ["parent", "staff", "admin"]);
+export const paymentStatus = pgEnum("payment_status", ["pending", "paid", "failed", "refunded"]);
+
+export const users = pgTable("users", {
+  id: text("id").primaryKey(),
+  clerkUserId: text("clerk_user_id").notNull().unique(),
+  email: text("email").notNull().default(""),
+  role: userRole("role").notNull().default("parent"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const students = pgTable("students", {
+  id: text("id").primaryKey(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  grade: text("grade").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const guardians = pgTable("guardians", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  studentId: text("student_id")
+    .notNull()
+    .references(() => students.id, { onDelete: "cascade" }),
+});
+
+export const fees = pgTable("fees", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  amountCents: integer("amount_cents").notNull(),
+  dueDate: date("due_date"),
+  studentId: text("student_id").references(() => students.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const payments = pgTable("payments", {
+  id: text("id").primaryKey(),
+  feeId: text("fee_id").references(() => fees.id, { onDelete: "set null" }),
+  studentId: text("student_id").references(() => students.id, { onDelete: "set null" }),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  stripeSessionId: text("stripe_session_id").notNull().unique(),
+  paymentIntentId: text("payment_intent_id"),
+  amountCents: integer("amount_cents").notNull(),
+  currency: text("currency").notNull().default("jmd"),
+  status: paymentStatus("status").notNull().default("pending"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const news = pgTable("news", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  eventDate: date("event_date").notNull(),
+  endsOn: date("ends_on").notNull(),
+  published: boolean("published").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const events = pgTable("events", {
+  id: text("id").primaryKey(),
+  eventDate: date("event_date").notNull(),
+  endsOn: date("ends_on").notNull(),
+  title: text("title").notNull(),
+  details: text("details"),
+  published: boolean("published").notNull().default(true),
+});
+
+export const sitePages = pgTable("site_pages", {
+  slug: text("slug").primaryKey(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  group: text("group").notNull(),
+  published: boolean("published").notNull().default(true),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const pageEntries = pgTable("page_entries", {
+  id: text("id").primaryKey(),
+  section: text("section").notNull(),
+  title: text("title").notNull(),
+  body: text("body").notNull(),
+  imageKey: text("image_key"),
+  published: boolean("published").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const staffMembers = pgTable("staff_members", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  role: text("role").notNull(),
+  title: text("title").notNull(),
+  assignments: text("assignments").notNull().default("[]"),
+  note: text("note").notNull().default(""),
+  imageKey: text("image_key"),
+  published: boolean("published").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const activities = pgTable("activities", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  schedule: text("schedule").notNull(),
+  venue: text("venue").notNull().default(""),
+  lead: text("lead").notNull().default(""),
+  cost: text("cost").notNull().default(""),
+  attire: text("attire").notNull().default(""),
+  note: text("note"),
+  startsOn: date("starts_on").notNull(),
+  endsOn: date("ends_on").notNull(),
+  published: boolean("published").notNull().default(true),
+});
+
+export const menuItems = pgTable("menu_items", {
+  id: text("id").primaryKey(),
+  startsOn: date("starts_on").notNull(),
+  endsOn: date("ends_on").notNull(),
+  category: text("category").notNull(),
+  name: text("name").notNull().default(""),
+  description: text("description").notNull(),
+  priceCents: integer("price_cents"),
+  imageKey: text("image_key"),
+  published: boolean("published").notNull().default(true),
+});
+
+export const menuCategories = pgTable("menu_categories", {
+  name: text("name").primaryKey(),
+  published: boolean("published").notNull().default(false),
+});
+
+export const storedFiles = pgTable("stored_files", {
+  id: text("id").primaryKey(),
+  bucket: text("bucket").notNull(),
+  objectKey: text("object_key").notNull(),
+  filename: text("filename").notNull(),
+  contentType: text("content_type").notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const contactDetails = pgTable("contact_details", {
+  id: text("id").primaryKey(),
+  address: text("address").notNull().default(""),
+  telephone: text("telephone").notNull().default(""),
+  whatsapp: text("whatsapp").notNull().default(""),
+  email: text("email").notNull().default(""),
+  socials: text("socials").notNull().default("[]"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const contactMessages = pgTable("contact_messages", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  name: text("name").notNull(),
+  email: text("email").notNull().default(""),
+  subject: text("subject").notNull(),
+  body: text("body").notNull(),
+  openedAt: timestamp("opened_at", { withTimezone: true }),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const contactReplies = pgTable("contact_replies", {
+  id: text("id").primaryKey(),
+  messageId: text("message_id")
+    .notNull()
+    .references(() => contactMessages.id, { onDelete: "cascade" }),
+  authorRole: text("author_role").notNull(),
+  body: text("body").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  readAt: timestamp("read_at", { withTimezone: true }),
+});
+
+export const devotionals = pgTable("devotionals", {
+  id: text("id").primaryKey(),
+  verse: text("verse").notNull(),
+  reference: text("reference").notNull(),
+  prayer: text("prayer").notNull(),
+  activeDate: date("active_date").notNull(),
+  endsOn: date("ends_on").notNull(),
+  published: boolean("published").notNull().default(true),
+});
