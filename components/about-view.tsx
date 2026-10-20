@@ -17,6 +17,8 @@ export function AboutView({
   pagePublishedAt,
   entries,
   staff,
+  principalImage = null,
+  principalName = "Principal",
 }: {
   slug: string;
   title: string;
@@ -24,6 +26,8 @@ export function AboutView({
   pagePublishedAt: Date | null;
   entries: Entry[];
   staff: Member[];
+  principalImage?: string | null;
+  principalName?: string;
 }) {
   const sections = pagesInGroup("about").filter((item) => item.slug !== "about");
   const slides = recordSlides(body, pagePublishedAt, entries);
@@ -31,10 +35,13 @@ export function AboutView({
   return (
     <main className="about-page">
       <header className="about-hero">
-        <div className="about-wrap about-rise">
-          <p className="about-kicker">About the school</p>
-          <h1>{title}</h1>
-          <div className="about-rule" />
+        <div className={`about-wrap about-rise${principalImage ? " about-hero-with-photo" : ""}`}>
+          {principalImage ? <img src={principalImage} alt={principalName} className="about-principal" /> : null}
+          <div>
+            <p className="about-kicker">About the school</p>
+            <h1>{title}</h1>
+            <div className="about-rule" />
+          </div>
         </div>
       </header>
       <div className="about-wrap about-body about-rise about-rise-late">

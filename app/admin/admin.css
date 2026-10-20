@@ -126,3 +126,217 @@
     height: auto;
   }
 }
+
+.user-desk {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.user-hero p {
+  margin: 0;
+  color: #9a7420;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.user-hero h1 {
+  margin: 0.25rem 0 0;
+}
+
+.user-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.user-tabs a {
+  border-radius: 999px;
+  background: #fff;
+  padding: 0.45rem 0.9rem;
+  color: #24344d;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: inset 0 0 0 1px #d7e0ea;
+}
+
+.user-tabs a[aria-current="page"] {
+  background: #0d47a1;
+  color: #fff;
+  box-shadow: none;
+}
+
+.user-tabs a:nth-child(2)[aria-current="page"] { background: #1b6b4a; }
+.user-tabs a:nth-child(3)[aria-current="page"] { background: #8a5a12; }
+
+.user-panel {
+  overflow: hidden;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 14px 36px rgb(11 31 58 / 7%);
+}
+
+.user-tools,
+.user-grant {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  background: #f4f7fb;
+  padding: 0.9rem 1rem;
+}
+
+.user-grant {
+  background: linear-gradient(90deg, #f4f7fb, #f8f4e8);
+  border-bottom: 1px solid #e6ebf2;
+}
+
+.user-tools label {
+  display: grid;
+  gap: 0.25rem;
+  color: #52627a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.user-tools input,
+.user-tools select,
+.user-grant select {
+  min-width: 14rem;
+  height: 2.4rem;
+  border: 1px solid #d5deea;
+  border-radius: 0.7rem;
+  background: #fff;
+  padding: 0 0.75rem;
+  color: #0b1f3a;
+  font-size: 0.92rem;
+}
+
+.user-tools button,
+.user-grant button[type="submit"] {
+  height: 2.4rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: #0d47a1;
+  padding: 0 1rem;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.user-tools a,
+.user-pager a {
+  color: #0d47a1;
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.user-note {
+  margin: 0;
+  padding: 0.9rem 1rem 0;
+  color: #52627a;
+}
+
+.user-panel thead {
+  background: #0b1f3a;
+}
+
+.user-panel thead th {
+  color: #fff;
+}
+
+.user-panel thead a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.user-panel thead a span {
+  color: #c9a227;
+  font-size: 0.75rem;
+}
+
+.user-panel tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.user-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.user-inline select {
+  height: 2.2rem;
+  border: 1px solid #d5deea;
+  border-radius: 0.65rem;
+  background: #fff;
+  padding: 0 0.55rem;
+}
+
+.user-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #e8eef8;
+  color: #0d47a1;
+}
+
+.user-badge[data-tone="student"] { background: #e3f2fd; color: #0d47a1; }
+.user-badge[data-tone="teacher"] { background: #e7f6ee; color: #1b6b4a; }
+.user-badge[data-tone="parent"] { background: #fff4d6; color: #8a5a12; }
+.user-badge[data-tone="staff"] { background: #ece8fb; color: #5b4b8a; }
+.user-badge[data-tone="active"],
+.user-badge[data-tone="unbanned"] { background: #e7f6ee; color: #1b6b4a; }
+.user-badge[data-tone="banned"] { background: #fde8e8; color: #b42318; }
+.user-badge[data-tone="superadmin"] { background: #0b1f3a; color: #f6e3a8; }
+.user-badge[data-tone="admin"] { background: #dbe7fb; color: #0d47a1; }
+.user-badge[data-tone="co-admin"] { background: #e7f4fb; color: #146c8a; }
+.user-badge[data-tone="privilege_granted"] { background: #e7f6ee; color: #1b6b4a; }
+.user-badge[data-tone="privilege_removed"] { background: #fff1e6; color: #9a4d12; }
+.user-badge[data-tone="status_changed"] { background: #ece8fb; color: #5b4b8a; }
+
+.user-ban button {
+  border-color: #f3c1c1;
+  background: #fff5f5;
+  color: #b42318;
+}
+
+.user-restore button {
+  border-color: #b7e4c7;
+  background: #f3fbf6;
+  color: #1b6b4a;
+}
+
+.user-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem 1rem;
+  color: #52627a;
+  font-size: 0.86rem;
+}
+
+.user-pager div {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.user-pager a[aria-disabled="true"] {
+  color: #b7c0cc;
+  pointer-events: none;
+}

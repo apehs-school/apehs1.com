@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { contactDetails, contactMessages, contactReplies } from "@/db/schema";
-import { ensureCurrentUser } from "@/lib/auth";
+import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
 import { setNotice } from "@/lib/notice";
 
 function clean(value: FormDataEntryValue | null) {
@@ -14,7 +14,7 @@ function clean(value: FormDataEntryValue | null) {
 
 async function requireAdmin() {
   const user = await ensureCurrentUser();
-  if (!user || user.role !== "admin") redirect("/account?error=admin");
+  if (!user || !hasAdminAccess(user)) redirect("/account?error=admin");
   const db = getDb();
   if (!db) redirect("/admin");
   return db;
@@ -84,7 +84,7 @@ export async function replyToContact(formData: FormData) {
   if (!messageId || !body) return;
   const [message] = await db.select().from(contactMessages).where(eq(contactMessages.id, messageId)).limit(1);
   if (!message) return;
-  const fromAdmin = user.role === "admin";
+  const fromAdmin = hasAdminAccess(user);
   if (!fromAdmin && message.userId !== user.id) return;
   await db.insert(contactReplies).values({
     id: crypto.randomUUID(),
@@ -108,7 +108,7 @@ export async function markContactRead(messageId: string) {
   if (!user || !db || !messageId) return;
   const [message] = await db.select().from(contactMessages).where(eq(contactMessages.id, messageId)).limit(1);
   if (!message) return;
-  if (user.role === "admin") {
+  if (hasAdminAccess(user)) {
     await db
       .update(contactReplies)
       .set({ readAt: new Date() })

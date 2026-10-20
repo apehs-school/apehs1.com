@@ -22,10 +22,11 @@ export default async function ManagedPage({
   const { chat, sent } = await searchParams;
   const content = await getSitePage(page);
   const entries = await listPublishedPageEntries(page);
-  const staff = page === "staff" ? await listPublishedStaff() : [];
+  const staff = page === "staff" || page === "principal" ? await listPublishedStaff() : [];
   if (!content && entries.length === 0 && staff.length === 0) notFound();
   const title = content?.title ?? pageDefault(page)?.title ?? "Page";
   const aboutPage = pagesInGroup("about").some((item) => item.slug === page);
+  const principal = staff.find((member) => member.role === "Principal" || member.title === "Principal");
 
   if (aboutPage) {
     return (
@@ -35,7 +36,9 @@ export default async function ManagedPage({
         body={content && page !== "contact" ? content.body : null}
         pagePublishedAt={content && "updatedAt" in content ? content.updatedAt : null}
         entries={entries}
-        staff={staff}
+        staff={page === "staff" ? staff : []}
+        principalImage={page === "principal" && principal?.imageKey ? publicObjectUrl("images", principal.imageKey) : null}
+        principalName={principal?.name ?? "Principal"}
       />
     );
   }

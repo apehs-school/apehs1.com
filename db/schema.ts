@@ -7,7 +7,46 @@ export const users = pgTable("users", {
   id: text("id").primaryKey(),
   clerkUserId: text("clerk_user_id").notNull().unique(),
   email: text("email").notNull().default(""),
+  name: text("name").notNull().default(""),
   role: userRole("role").notNull().default("parent"),
+  accountStatus: text("account_status").notNull().default("parent"),
+  phone: text("phone").notNull().default(""),
+  street: text("street").notNull().default(""),
+  apt: text("apt").notNull().default(""),
+  town: text("town").notNull().default(""),
+  parish: text("parish").notNull().default(""),
+  address: text("address").notNull().default(""),
+  securityQuestion: text("security_question").notNull().default(""),
+  securityAnswerHash: text("security_answer_hash").notNull().default(""),
+  securityAnswer: text("security_answer").notNull().default(""),
+  securityQuestionTwo: text("security_question_two").notNull().default(""),
+  securityAnswerTwoHash: text("security_answer_two_hash").notNull().default(""),
+  securityAnswerTwo: text("security_answer_two").notNull().default(""),
+  privilege: text("privilege"),
+  banned: boolean("banned").notNull().default(false),
+  clerkCreatedAt: timestamp("clerk_created_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const adminGrants = pgTable("admin_grants", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  privilege: text("privilege").notNull(),
+  assignedBy: text("assigned_by").references(() => users.id, { onDelete: "set null" }),
+  assignedAt: timestamp("assigned_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const userEvents = pgTable("user_events", {
+  id: text("id").primaryKey(),
+  actorId: text("actor_id").references(() => users.id, { onDelete: "set null" }),
+  actorName: text("actor_name").notNull().default(""),
+  targetId: text("target_id").references(() => users.id, { onDelete: "set null" }),
+  targetName: text("target_name").notNull().default(""),
+  action: text("action").notNull(),
+  detail: text("detail").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

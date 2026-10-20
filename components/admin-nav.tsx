@@ -11,6 +11,7 @@ const links = [
   { href: "/admin/activities", label: "Activities", detail: "Clubs, schedule, venue, staff, cost, and attire" },
   { href: "/admin/about", label: "About", detail: "Principal, staff, history, mission, vision, values, goals, motto, and song" },
   { href: "/admin/contact", label: "Contact", detail: "Address, phone, email, and hours" },
+  { href: "/admin/users", label: "User management", detail: "Accounts, admin privileges, and history" },
   { href: "/admin/files", label: "Files", detail: "Images, documents, and other stored files" },
 ];
 

@@ -1,4 +1,4 @@
-import { ensureCurrentUser } from "@/lib/auth";
+import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
 import { getStoredFile } from "@/lib/queries";
 import { isStorageBucket, publicObjectUrl, readStoredObject } from "@/lib/storage";
 
@@ -13,7 +13,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   if (publicUrl) return Response.redirect(publicUrl, 302);
 
   const user = await ensureCurrentUser();
-  if (!user || user.role !== "admin") return new Response("Forbidden", { status: 403 });
+  if (!user || !hasAdminAccess(user)) return new Response("Forbidden", { status: 403 });
 
   const object = await readStoredObject(file.bucket, file.objectKey);
   const body = object.Body;

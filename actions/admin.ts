@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { activities, devotionals, events, fees, guardians, menuCategories, menuItems, news, pageEntries, sitePages, staffMembers, students, users } from "@/db/schema";
-import { ensureCurrentUser } from "@/lib/auth";
+import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
 import { fallbackEvents, fallbackMenu, fallbackNews, fallbackWord } from "@/lib/fallback";
 import { activityDefaults, pageDefault, sitePageDefaults } from "@/lib/site-content";
 import { dollarsToCents } from "@/lib/format";
@@ -16,7 +16,7 @@ import { putStoredObject } from "@/lib/storage";
 
 async function requireAdmin() {
   const user = await ensureCurrentUser();
-  if (!user || user.role !== "admin") redirect("/account?error=admin");
+  if (!user || !hasAdminAccess(user)) redirect("/account?error=admin");
   const db = getDb();
   if (!db) redirect("/admin");
   return db;
@@ -548,6 +548,7 @@ export async function createStaffMember(formData: FormData) {
   await db.insert(staffMembers).values({ id: crypto.randomUUID(), ...details, imageKey, published: false });
   await setNotice("Staff added");
   revalidatePath("/staff");
+  revalidatePath("/principal");
   revalidatePath("/admin/about");
   redirect("/admin/about?tab=staff");
 }
@@ -562,6 +563,7 @@ export async function updateStaffMember(formData: FormData) {
   await db.update(staffMembers).set({ ...details, imageKey: imageKey ?? current?.imageKey ?? null }).where(eq(staffMembers.id, id));
   await setNotice("Staff saved");
   revalidatePath("/staff");
+  revalidatePath("/principal");
   revalidatePath("/admin/about");
   redirect("/admin/about?tab=staff");
 }
@@ -574,6 +576,7 @@ export async function setStaffPublished(formData: FormData) {
   await db.update(staffMembers).set({ published }).where(eq(staffMembers.id, id));
   await setNotice(published ? "Published" : "Unpublished");
   revalidatePath("/staff");
+  revalidatePath("/principal");
   revalidatePath("/admin/about");
 }
 
@@ -584,6 +587,7 @@ export async function deleteStaffMember(formData: FormData) {
   await db.delete(staffMembers).where(eq(staffMembers.id, id));
   await setNotice("Staff deleted");
   revalidatePath("/staff");
+  revalidatePath("/principal");
   revalidatePath("/admin/about");
   redirect("/admin/about?tab=staff");
 }

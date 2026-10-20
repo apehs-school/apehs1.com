@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin-nav";
 import { SetupNotice } from "@/components/setup-notice";
 import { Button } from "@/components/ui/button";
-import { ensureCurrentUser } from "@/lib/auth";
+import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
 import { clerkEnabled, databaseEnabled } from "@/lib/env";
 import "./admin.css";
 
@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const user = await ensureCurrentUser();
   if (!user) redirect("/sign-in");
-  if (user.role !== "admin") redirect("/account?error=admin");
+  if (!hasAdminAccess(user)) redirect("/account?error=admin");
 
   return (
     <div className="admin-shell">

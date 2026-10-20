@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
 import { storedFiles } from "@/db/schema";
-import { ensureCurrentUser } from "@/lib/auth";
+import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
 import { setNotice } from "@/lib/notice";
 import { deleteStoredObject, isStorageBucket, putStoredObject } from "@/lib/storage";
 
@@ -13,7 +13,7 @@ const maxBytes = 25 * 1024 * 1024;
 
 async function requireAdmin() {
   const user = await ensureCurrentUser();
-  if (!user || user.role !== "admin") redirect("/account?error=admin");
+  if (!user || !hasAdminAccess(user)) redirect("/account?error=admin");
   const db = getDb();
   if (!db) redirect("/admin/files");
   return db;

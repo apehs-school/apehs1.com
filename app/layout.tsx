@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Geist, Source_Serif_4 } from "next/font/google";
 import { cookies } from "next/headers";
 import { NoticeToast } from "@/components/notice-toast";
+import { ProfileGate } from "@/components/profile-gate";
 import { clerkEnabled } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -25,7 +26,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={cn("font-sans", geist.variable, sourceSerif.variable)}>
       <body>
-        {clerkEnabled() ? <ClerkProvider>{content}</ClerkProvider> : content}
+        {clerkEnabled() ? (
+          <ClerkProvider>
+            {content}
+            <ProfileGate />
+          </ClerkProvider>
+        ) : (
+          content
+        )}
         <NoticeToast notice={notice} />
       </body>
     </html>

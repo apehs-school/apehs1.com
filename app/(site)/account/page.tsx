@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SetupNotice } from "@/components/setup-notice";
-import { ensureCurrentUser } from "@/lib/auth";
+import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
 import { clerkEnabled, databaseEnabled } from "@/lib/env";
 import { formatJmd, formatLongDate } from "@/lib/format";
 import { getAccountPayments, getLinkedStudents } from "@/lib/queries";
@@ -13,7 +13,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
   const user = await ensureCurrentUser();
   if (!user) return <SetupNotice />;
-  if (user.role === "admin") redirect("/admin");
+  if (hasAdminAccess(user)) redirect("/admin");
 
   const [students, payments] = await Promise.all([getLinkedStudents(user.id), getAccountPayments(user.id)]);
 

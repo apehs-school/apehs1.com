@@ -1,5 +1,5 @@
 import { SiteNav } from "@/components/site-nav";
-import { ensureCurrentUser } from "@/lib/auth";
+import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
 import { listUserMessageAlerts } from "@/lib/queries";
 
 export async function SiteHeader() {
@@ -27,7 +27,7 @@ export async function SiteHeader() {
           className="h-24 w-auto drop-shadow-[0_8px_18px_rgba(13,71,161,0.28)] sm:h-32"
         />
       </div>
-      <SiteNav alerts={alerts} />
+      <SiteNav alerts={alerts} showAdmin={Boolean(user && hasAdminAccess(user))} />
     </header>
   );
 }
