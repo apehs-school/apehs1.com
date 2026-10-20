@@ -108,7 +108,7 @@ async function ActivityCards() {
             {"startsOn" in item && item.startsOn && "endsOn" in item && item.endsOn ? (
               <p>
                 <strong>Dates: </strong>
-                {formatLongDate(item.startsOn)} – {formatLongDate(item.endsOn)}
+                {formatLongDate(String(item.startsOn))} – {formatLongDate(String(item.endsOn))}
               </p>
             ) : null}
             <p className="whitespace-pre-line">

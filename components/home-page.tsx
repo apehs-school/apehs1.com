@@ -75,7 +75,7 @@ export async function HomePageContent() {
               <article key={`${item.title}-${item.eventDate}`} className="border-b border-[#e6ebf2] pb-5 last:border-0 last:pb-0">
                 <Badge variant="secondary">
                   {"endsOn" in item && item.endsOn && item.endsOn !== item.eventDate
-                    ? `${formatLongDate(item.eventDate)} – ${formatLongDate(item.endsOn)}`
+                    ? `${formatLongDate(item.eventDate)} – ${formatLongDate(String(item.endsOn))}`
                     : formatLongDate(item.eventDate)}
                 </Badge>
                 <h3 className="mt-2 font-medium text-[#0b1f3a]">{item.title}</h3>
