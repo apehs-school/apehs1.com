@@ -40,7 +40,15 @@ function roleFor(user: { role: string; privilege?: string | null }, status: stri
   return "parent" as const;
 }
 
-function cleanDetails(profile: Pick<AccountProfile, "street" | "apt" | "town" | "parish" | "phone" | "status">) {
+type DetailsResult =
+  | { error: string }
+  | { error: null; street: string; apt: string; town: string; parish: string; phone: string; status: string; address: string };
+
+type QuestionsResult =
+  | { error: string }
+  | { error: null; question: string; questionTwo: string; answer: string; answerTwo: string };
+
+function cleanDetails(profile: Pick<AccountProfile, "street" | "apt" | "town" | "parish" | "phone" | "status">): DetailsResult {
   const street = profile.street.trim();
   const apt = profile.apt.trim();
   const town = profile.town.trim();
@@ -56,7 +64,7 @@ function cleanDetails(profile: Pick<AccountProfile, "street" | "apt" | "town" | 
   return { error: null, street, apt, town, parish, phone, status, address: formatAddress({ street, apt, town, parish }) };
 }
 
-function cleanQuestions(profile: Pick<AccountProfile, "question" | "answer" | "questionTwo" | "answerTwo">) {
+function cleanQuestions(profile: Pick<AccountProfile, "question" | "answer" | "questionTwo" | "answerTwo">): QuestionsResult {
   const question = profile.question.trim();
   const questionTwo = profile.questionTwo.trim();
   const answer = profile.answer.trim();
@@ -103,7 +111,7 @@ export async function saveAccountDetails(profile: Pick<AccountProfile, "street" 
   const loaded = await current();
   if (!loaded) return { error: "Sign in did not finish. Try again." };
   const details = cleanDetails(profile);
-  if (details.error) return { error: details.error };
+  if (details.error !== null) return { error: details.error };
   await loaded.db
     .update(users)
     .set({
@@ -124,7 +132,7 @@ export async function saveSecurityQuestions(profile: Pick<AccountProfile, "quest
   const loaded = await current();
   if (!loaded) return { error: "Sign in did not finish. Try again." };
   const questions = cleanQuestions(profile);
-  if (questions.error) return { error: questions.error };
+  if (questions.error !== null) return { error: questions.error };
   await loaded.db
     .update(users)
     .set({

@@ -12,8 +12,6 @@ export function AuthLinks({ part = "links", showAdmin = false }: { part?: "links
             appearance={{
               variables: {
                 colorPrimary: "#0d47a1",
-                colorText: "#0b1f3a",
-                colorTextSecondary: "#52627a",
                 colorBackground: "#ffffff",
                 borderRadius: "0.85rem",
               },

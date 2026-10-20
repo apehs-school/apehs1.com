@@ -280,8 +280,8 @@ function ProfileEditor({ mode }: { mode: "details" | "questions" }) {
   const [phase, setPhase] = useState<"view" | "verify" | "edit">("view");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
-  const [question, setQuestion] = useState(securityQuestions[0]);
-  const [questionTwo, setQuestionTwo] = useState(securityQuestions[1]);
+  const [question, setQuestion] = useState<string>(securityQuestions[0]);
+  const [questionTwo, setQuestionTwo] = useState<string>(securityQuestions[1]);
 
   useEffect(() => {
     void getMyProfile().then((next) => {

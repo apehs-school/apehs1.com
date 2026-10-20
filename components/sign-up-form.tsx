@@ -4,7 +4,7 @@ import { useSignUp } from "@clerk/nextjs";
 import { useState } from "react";
 import { saveAccountProfile } from "@/actions/profile";
 import { AddressFields, PhoneField, ProfileHero, ProfileSteps, QuestionFields, StatusPicker } from "@/components/account-profile-forms";
-import { jamaicaParishes } from "@/lib/profile";
+import { jamaicaParishes, securityQuestions } from "@/lib/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,8 +24,8 @@ export function SignUpForm() {
   const [code, setCode] = useState("");
   const [profileCard, setProfileCard] = useState<"details" | "security">("details");
   const [home, setHome] = useState({ street: "", apt: "", town: "", parish: "", phone: "", status: "parent" });
-  const [question, setQuestion] = useState(securityQuestions[0]);
-  const [questionTwo, setQuestionTwo] = useState(securityQuestions[1]);
+  const [question, setQuestion] = useState<string>(securityQuestions[0]);
+  const [questionTwo, setQuestionTwo] = useState<string>(securityQuestions[1]);
 
   async function createAccount(formData: FormData) {
     setError("");
