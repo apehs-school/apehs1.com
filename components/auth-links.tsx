@@ -11,9 +11,9 @@ export function AuthLinks({ part = "links", showAdmin = false }: { part?: "links
           <UserButton
             appearance={{
               variables: {
-                colorPrimary: "#0d47a1",
+                colorPrimary: "#0b1f3a",
                 colorBackground: "#ffffff",
-                borderRadius: "0.85rem",
+                borderRadius: "2px",
               },
               elements: {
                 navbar: "apehs-account-nav",

@@ -140,19 +140,11 @@ export function ProfileSteps({ current }: { current: "details" | "security" }) {
 
 export function ProfileHero({ kind, title, detail }: { kind: "address" | "security"; title: string; detail: string }) {
   return (
-    <div className={`profile-hero profile-hero-${kind}`}>
-      <span className="profile-hero-art" aria-hidden="true">
-        {kind === "address" ? (
-          <svg width="28" height="28" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 14.5 9 2.5 2.5 0 0 1 12 11.5z" /></svg>
-        ) : (
-          <svg width="28" height="28" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5zm-1.2 13.2-3-3 1.4-1.4 1.6 1.6 3.6-3.6 1.4 1.4z" /></svg>
-        )}
-      </span>
-      <span>
-        <strong>{title}</strong>
-        <small>{detail}</small>
-      </span>
-    </div>
+    <header className="profile-letterhead">
+      <p className="profile-kicker">{kind === "address" ? "Account record" : "Account security"}</p>
+      <h2>{title}</h2>
+      <p>{detail}</p>
+    </header>
   );
 }
 
@@ -422,12 +414,12 @@ function SavedQuestions({
         <div data-tone="gold">
           <dt>Security question</dt>
           <dd>{profile.question}</dd>
-          <dd className="profile-answer">{profile.answer || "Saved earlier in protected form. Verify, then enter it again to display it."}</dd>
+          <dd className={profile.answer ? "profile-answer" : "profile-answer is-note"}>{profile.answer || "Saved earlier in protected form. Verify, then enter it again to display it."}</dd>
         </div>
         <div data-tone="teal">
           <dt>Second security question</dt>
           <dd>{profile.questionTwo}</dd>
-          <dd className="profile-answer">{profile.answerTwo || "Saved earlier in protected form. Verify, then enter it again to display it."}</dd>
+          <dd className={profile.answerTwo ? "profile-answer" : "profile-answer is-note"}>{profile.answerTwo || "Saved earlier in protected form. Verify, then enter it again to display it."}</dd>
         </div>
       </dl>
       <Button className="profile-action" type="button" onClick={onEdit}>Update questions</Button>
