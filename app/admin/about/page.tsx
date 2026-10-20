@@ -2,11 +2,11 @@ import { createPageEntry, deleteAboutPage, deletePageEntry, deleteStaffMember, s
 import { DeleteButton } from "@/components/delete-button";
 import { AdminField } from "@/components/admin-field";
 import { RecordDialog } from "@/components/record-dialog";
+import { RecordParagraphs } from "@/components/record-paragraphs";
 import { StaffDialog, type StaffDraft } from "@/components/staff-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
 import { getDb } from "@/db";
 import { pageEntries, sitePages, staffMembers } from "@/db/schema";
 import { sitePageDefaults } from "@/lib/site-content";
@@ -135,22 +135,18 @@ function PageRecordTable({
   entries: { id: string; title: string; body: string; imageKey: string | null; published: boolean }[];
 }) {
   const titleLabel = active === "principal" ? "Message title" : "Title";
-  const bodyLabel = active === "principal" ? "Message description" : "Description";
+  const bodyLabel = active === "principal" ? "Message paragraph" : "Paragraph";
   const withImage = active !== "principal";
 
   return (
     <>
-      <p className="text-sm text-muted-foreground">
-        Leave a blank line between paragraphs. Start a line with <code>- </code> for a bullet, or <code>## </code> for a heading.
-      </p>
+      <p className="text-sm text-muted-foreground">Each paragraph appears on its own on the public page. Use Add paragraph for another one.</p>
       <RecordDialog trigger="Add record" title={`Add a record to ${currentTitle}`} action={createPageEntry}>
         <input type="hidden" name="section" value={active} />
         <AdminField label={titleLabel}>
           <Input name="title" className={fieldClass} required />
         </AdminField>
-        <AdminField label={bodyLabel}>
-          <Textarea name="body" className="text-base" rows={14} required />
-        </AdminField>
+        <RecordParagraphs label={bodyLabel} titleLabel={titleLabel} />
         {withImage ? (
           <AdminField label="Image">
             <Input name="image" type="file" accept="image/*" className={fieldClass} />
@@ -190,9 +186,7 @@ function PageRecordTable({
                     <AdminField label={titleLabel}>
                       <Input name="title" className={fieldClass} defaultValue={builtin.title} required />
                     </AdminField>
-                    <AdminField label={bodyLabel}>
-                      <Textarea name="body" className="text-base" defaultValue={builtin.body} rows={14} required />
-                    </AdminField>
+                    <RecordParagraphs label={bodyLabel} titleLabel={titleLabel} defaultBody={builtin.body} />
                   </RecordDialog>
                   <form action={setAboutPagePublished}>
                     <input type="hidden" name="slug" value={active} />
@@ -226,9 +220,7 @@ function PageRecordTable({
                     <AdminField label={titleLabel}>
                       <Input name="title" className={fieldClass} defaultValue={entry.title} required />
                     </AdminField>
-                    <AdminField label={bodyLabel}>
-                      <Textarea name="body" className="text-base" defaultValue={entry.body} rows={14} required />
-                    </AdminField>
+                    <RecordParagraphs label={bodyLabel} titleLabel={titleLabel} defaultBody={entry.body} existingImageUrl={entry.imageKey ? publicObjectUrl("images", entry.imageKey) : null} />
                     {withImage ? (
                       <AdminField label="Image">
                         <Input name="image" type="file" accept="image/*" className={fieldClass} />

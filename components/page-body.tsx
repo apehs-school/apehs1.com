@@ -1,4 +1,4 @@
-export function PageBody({ body }: { body: string }) {
+export function PageBody({ body, formal = false }: { body: string; formal?: boolean }) {
   const blocks = body
     .trim()
     .split(/\n\s*\n/)
@@ -12,7 +12,7 @@ export function PageBody({ body }: { body: string }) {
         const bullets = lines.length > 0 && lines.every((line) => line.startsWith("- "));
         if (bullets) {
           return (
-            <ul className="list-disc space-y-1 pl-5" key={block}>
+            <ul className={formal ? undefined : "list-disc space-y-1 pl-5"} key={block}>
               {lines.map((line) => (
                 <li key={line}>{line.slice(2)}</li>
               ))}

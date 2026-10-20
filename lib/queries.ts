@@ -283,7 +283,7 @@ export async function getSitePage(slug: string) {
   const rows = await read(() => db.select().from(sitePages).where(eq(sitePages.slug, slug)).limit(1), []);
   if (rows[0]) {
     if (!rows[0].published || rows[0].group === "hidden") return null;
-    return { slug, title: rows[0].title, body: rows[0].body, group: rows[0].group };
+    return { slug, title: rows[0].title, body: rows[0].body, group: rows[0].group, updatedAt: rows[0].updatedAt };
   }
   return fallback;
 }
@@ -301,7 +301,7 @@ export async function listPublishedPageEntries(section: string) {
   const db = getDb();
   if (!db) return [];
   return read(
-    () => db.select().from(pageEntries).where(and(eq(pageEntries.section, section), eq(pageEntries.published, true))).orderBy(asc(pageEntries.createdAt)),
+    () => db.select().from(pageEntries).where(and(eq(pageEntries.section, section), eq(pageEntries.published, true))).orderBy(desc(pageEntries.createdAt)),
     [],
   );
 }

@@ -7,6 +7,14 @@ export function jamaicaDate(date = new Date()) {
   }).format(date);
 }
 
+export function formatPublished(value: Date | string) {
+  return new Intl.DateTimeFormat("en-JM", {
+    dateStyle: "long",
+    timeStyle: "short",
+    timeZone: "America/Jamaica",
+  }).format(new Date(value));
+}
+
 export function formatLongDate(isoDate: string) {
   const [year, month, day] = isoDate.split("-").map(Number);
   return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString("en-JM", {

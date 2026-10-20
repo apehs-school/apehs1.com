@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
+import { AboutView } from "@/components/about-view";
 import { PageBody } from "@/components/page-body";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactSection } from "@/components/contact-section";
 import { pageDefault, pagesInGroup } from "@/lib/site-content";
 import { formatLongDate } from "@/lib/format";
-import { formatStaffAssignment, parseStaffAssignments } from "@/lib/staff";
 import { publicObjectUrl } from "@/lib/storage";
 import { getSitePage, listActivities, listPublishedPageEntries, listPublishedStaff } from "@/lib/queries";
 
@@ -25,29 +25,25 @@ export default async function ManagedPage({
   const staff = page === "staff" ? await listPublishedStaff() : [];
   if (!content && entries.length === 0 && staff.length === 0) notFound();
   const title = content?.title ?? pageDefault(page)?.title ?? "Page";
+  const aboutPage = pagesInGroup("about").some((item) => item.slug === page);
+
+  if (aboutPage) {
+    return (
+      <AboutView
+        slug={page}
+        title={title}
+        body={content && page !== "contact" ? content.body : null}
+        pagePublishedAt={content && "updatedAt" in content ? content.updatedAt : null}
+        entries={entries}
+        staff={staff}
+      />
+    );
+  }
 
   return (
     <main className="mx-auto max-w-5xl space-y-6 px-4 py-10">
       <h1 className="text-3xl font-semibold text-primary">{title}</h1>
-      {staff.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {staff.map((member) => {
-            const assignments = parseStaffAssignments(member.assignments).map(formatStaffAssignment).filter(Boolean);
-            const imageUrl = member.imageKey ? publicObjectUrl("images", member.imageKey) : null;
-            return (
-              <article key={member.id} className="flex gap-4 rounded-xl border bg-card p-4">
-                {imageUrl ? <img src={imageUrl} alt="" className="h-24 w-24 shrink-0 rounded-full object-cover" /> : null}
-                <div className="space-y-1">
-                  <h2 className="text-xl font-semibold text-primary">{member.name}</h2>
-                  <p className="font-medium">{member.title}</p>
-                  {assignments.length > 0 ? <p>{assignments.join(", ")}</p> : null}
-                  {member.note ? <p className="leading-7 text-muted-foreground">{member.note}</p> : null}
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      ) : content && page !== "contact" ? (
+      {content && page !== "contact" ? (
         <div className="space-y-4 leading-7">
           <PageBody body={content.body} />
         </div>
@@ -62,25 +58,10 @@ export default async function ManagedPage({
           </section>
         );
       })}
-      {page === "about" ? <AboutLinks /> : null}
       {page === "admissions" ? <AdmissionForms /> : null}
       {page === "extra" ? <ActivityCards /> : null}
       {page === "contact" ? <ContactSection chatId={chat} sent={sent === "1"} /> : null}
     </main>
-  );
-}
-
-function AboutLinks() {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {pagesInGroup("about")
-        .filter((item) => item.slug !== "about")
-        .map((item) => (
-          <Button key={item.slug} nativeButton={false} variant="outline" render={<a href={`/${item.slug}`} />}>
-            {item.title}
-          </Button>
-        ))}
-    </div>
   );
 }
 

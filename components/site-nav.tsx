@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { AuthLinks } from "@/components/auth-links";
 import { MessageBell, type MessageAlert } from "@/components/message-bell";
 import {
@@ -31,7 +32,7 @@ const academicLinks = [
 
 const linkClass =
   "border-b-2 border-transparent px-3 py-3 text-[13px] font-medium tracking-wide text-[#0b1f3a] uppercase hover:border-[#c9a227] hover:text-[#0d47a1]";
-const itemClass = "text-sm text-foreground";
+const itemClass = "school-menu-item";
 
 export function SiteNav({ alerts = [] }: { alerts?: MessageAlert[] }) {
   return (
@@ -77,15 +78,17 @@ export function SiteNav({ alerts = [] }: { alerts?: MessageAlert[] }) {
 }
 
 function Menu({ label, href, links }: { label: string; href: string; links: string[][] }) {
+  const pathname = usePathname();
+  const active = pathname === href || links.some(([path]) => pathname === path);
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={linkClass}>{label}</DropdownMenuTrigger>
-      <DropdownMenuContent>
-        <DropdownMenuItem className={itemClass} nativeButton={false} render={<a href={href} />}>
+      <DropdownMenuTrigger className={cn(linkClass, active && "border-[#c9a227] text-[#0d47a1]")}>{label}</DropdownMenuTrigger>
+      <DropdownMenuContent className="school-menu">
+        <DropdownMenuItem className={itemClass} data-current={pathname === href ? "true" : undefined} nativeButton={false} render={<a href={href} />}>
           {label}
         </DropdownMenuItem>
         {links.map(([path, text]) => (
-          <DropdownMenuItem key={path} className={itemClass} nativeButton={false} render={<a href={path} />}>
+          <DropdownMenuItem key={path} className={itemClass} data-current={pathname === path ? "true" : undefined} nativeButton={false} render={<a href={path} />}>
             {text}
           </DropdownMenuItem>
         ))}
