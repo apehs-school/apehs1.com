@@ -15,7 +15,7 @@ export async function downloadBehaviourPdf(form: BehaviourAnswers, stampSrc: str
   const sheet = new Sheet(pdf, font, bold);
   drawForm(sheet, form, signature, stamp);
   const bytes = await pdf.save();
-  const blob = new Blob([bytes], { type: "application/pdf" });
+  const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   const name = [form.lastName, form.firstName].filter(Boolean).join("-") || "form";

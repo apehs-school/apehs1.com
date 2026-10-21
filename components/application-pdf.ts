@@ -80,7 +80,7 @@ export async function downloadApplicationPdf(input: PdfApplication) {
   drawFamilyPage(sheet, input, pictures);
   for (const upload of input.uploads ?? []) await drawUploadPage(pdf, sheet, upload);
   const bytes = await pdf.save();
-  const blob = new Blob([bytes], { type: "application/pdf" });
+  const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
