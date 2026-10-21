@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import { AboutView } from "@/components/about-view";
+import { AdmissionApply } from "@/components/admission-apply";
 import { AdmissionsView } from "@/components/admissions-view";
 import { AwardsView } from "@/components/awards-view";
 import { ScholarshipView } from "@/components/scholarship-view";
 import { ProgrammeBoard } from "@/components/programme-board";
 import { ActivityBoard } from "@/components/activity-card";
 import { PageBody } from "@/components/page-body";
-import { Button } from "@/components/ui/button";
 import { ContactSection } from "@/components/contact-section";
 import { pageDefault, pagesInGroup } from "@/lib/site-content";
 import { formatLongDate } from "@/lib/format";
@@ -92,14 +92,7 @@ export default async function ManagedPage({
 }
 
 function AdmissionForms() {
-  return (
-    <div className="flex flex-wrap gap-2">
-      <Button nativeButton={false} render={<a href="/Documents/APEHS - STUDENT ADMISSION FORM.pdf" />}>Student admission form</Button>
-      <Button nativeButton={false} variant="outline" render={<a href="/Documents/APEHS - NEW STUDENT BEHAVIOUR ASSESSMENT FORM.pdf" />}>
-        Behaviour assessment form
-      </Button>
-    </div>
-  );
+  return <AdmissionApply />;
 }
 
 async function ActivityCards() {

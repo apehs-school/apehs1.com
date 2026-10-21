@@ -1,10 +1,8 @@
-import { SchoolCalendar } from "@/components/school-calendar";
-import { Badge } from "@/components/ui/badge";
+import { NewsBulletin } from "@/components/news-bulletin";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fallbackNews } from "@/lib/fallback";
-import { formatLongDate } from "@/lib/format";
-import { getCalendarEvents, getNewsItems } from "@/lib/queries";
+import { bulletinImageKeys, getNewsItems } from "@/lib/queries";
+import { publicObjectUrl } from "@/lib/storage";
 
 const stats = [
   ["96.2%", "Grade 6 average PEP results over a 5-year period"],
@@ -14,8 +12,36 @@ const stats = [
 ];
 
 export async function HomePageContent() {
-  const [news, events] = await Promise.all([getNewsItems(), getCalendarEvents()]);
-  const stories = news.length > 0 ? news : fallbackNews;
+  const news = await getNewsItems();
+  const stories = (news.length > 0 ? news : fallbackNews.map((item, index) => ({
+    id: `sample-${index}`,
+    title: item.title.replace(/^\S+\s/, ""),
+    body: item.body,
+    details: "",
+    category: ["Academics", "School events", "Achievements"][index] ?? "Announcement",
+    audience: "Everyone",
+    eventDate: item.eventDate,
+    endsOn: null,
+    pinned: false,
+    published: true,
+    showFrom: item.eventDate,
+    images: "",
+  }))).map((item) => ({
+    id: item.id,
+    title: item.title,
+    body: item.body,
+    details: item.details,
+    category: item.category,
+    audience: item.audience,
+    eventDate: item.eventDate,
+    endsOn: item.endsOn,
+    images: typeof item.images === "string"
+      ? bulletinImageKeys(item.images).flatMap((key) => {
+          const url = publicObjectUrl("images", key);
+          return url ? [url] : [];
+        })
+      : [],
+  })).sort((a, b) => b.eventDate.localeCompare(a.eventDate));
 
   return (
     <main className="bg-[#f4f6f8]">
@@ -48,45 +74,25 @@ export async function HomePageContent() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-10 px-6 py-12 lg:grid-cols-[1.15fr_0.85fr]">
-        <div>
-          <p className="text-xs font-medium tracking-[0.28em] text-[#9a7420] uppercase">About the school</p>
-          <h2 className="mt-2 font-serif text-3xl text-[#0b1f3a]">Welcome</h2>
-          <p className="mt-4 leading-7 text-[#24344d]">
-            The merged Ardenne Preparatory and Extension High School came into existence on September 1, 2000. The two
-            schools had shared one campus and the same Board of Governors. The merger gave students the contact hours,
-            administration, and co-curricular programme the Ministry of Education required.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button nativeButton={false} variant="outline" render={<a href="/history" />}>
-              School history
-            </Button>
-            <Button nativeButton={false} variant="outline" render={<a href="/awards" />}>
-              Awards and results
-            </Button>
-          </div>
+      <section className="mx-auto max-w-6xl px-6 py-12">
+        <p className="text-xs font-medium tracking-[0.28em] text-[#9a7420] uppercase">About the school</p>
+        <h2 className="mt-2 font-serif text-3xl text-[#0b1f3a]">Welcome</h2>
+        <p className="mt-4 max-w-3xl leading-7 text-[#24344d]">
+          The merged Ardenne Preparatory and Extension High School came into existence on September 1, 2000. The two
+          schools had shared one campus and the same Board of Governors. The merger gave students the contact hours,
+          administration, and co-curricular programme the Ministry of Education required.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Button nativeButton={false} variant="outline" render={<a href="/history" />}>
+            School history
+          </Button>
+          <Button nativeButton={false} variant="outline" render={<a href="/awards" />}>
+            Awards and results
+          </Button>
         </div>
-        <Card className="border-[#d9e0ea] shadow-none">
-          <CardHeader>
-            <CardTitle className="font-serif text-2xl">Latest news</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            {stories.map((item) => (
-              <article key={`${item.title}-${item.eventDate}`} className="border-b border-[#e6ebf2] pb-5 last:border-0 last:pb-0">
-                <Badge variant="secondary">
-                  {"endsOn" in item && item.endsOn && item.endsOn !== item.eventDate
-                    ? `${formatLongDate(item.eventDate)} – ${formatLongDate(String(item.endsOn))}`
-                    : formatLongDate(item.eventDate)}
-                </Badge>
-                <h3 className="mt-2 font-medium text-[#0b1f3a]">{item.title}</h3>
-                <p className="mt-1 text-sm leading-6 text-muted-foreground">{item.body}</p>
-              </article>
-            ))}
-          </CardContent>
-        </Card>
       </section>
 
-      <SchoolCalendar events={events} />
+      <NewsBulletin items={stories} />
     </main>
   );
 }

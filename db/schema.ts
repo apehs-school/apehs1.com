@@ -95,8 +95,14 @@ export const news = pgTable("news", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
   body: text("body").notNull(),
+  details: text("details").notNull().default(""),
+  category: text("category").notNull().default("Announcement"),
+  audience: text("audience").notNull().default("Everyone"),
   eventDate: date("event_date").notNull(),
-  endsOn: date("ends_on").notNull(),
+  showFrom: date("show_from"),
+  endsOn: date("ends_on"),
+  pinned: boolean("pinned").notNull().default(false),
+  images: text("images").notNull().default("[]"),
   published: boolean("published").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -131,6 +137,50 @@ export const admissionRecords = pgTable("admission_records", {
 export const admissionMeta = pgTable("admission_meta", {
   id: text("id").primaryKey(),
   migratedAt: timestamp("migrated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const admissionApplications = pgTable("admission_applications", {
+  id: text("id").primaryKey(),
+  photoFileId: text("photo_file_id"),
+  academicYear: text("academic_year").notNull(),
+  lastName: text("last_name").notNull(),
+  firstName: text("first_name").notNull(),
+  middleName: text("middle_name").notNull().default(""),
+  sex: text("sex").notNull(),
+  birthDate: text("birth_date").notNull().default(""),
+  birthMonth: text("birth_month").notNull().default(""),
+  birthYear: text("birth_year").notNull().default(""),
+  age: text("age").notNull().default(""),
+  birthPlace: text("birth_place").notNull().default(""),
+  nationality: text("nationality").notNull().default(""),
+  address: text("address").notNull().default(""),
+  nsrn: text("nsrn").notNull().default(""),
+  gradeSeeking: text("grade_seeking").notNull().default(""),
+  church: text("church").notNull().default(""),
+  pastor: text("pastor").notNull().default(""),
+  entryType: text("entry_type").notNull(),
+  lastSchool: text("last_school").notNull().default(""),
+  lastGrade: text("last_grade").notNull().default(""),
+  mother: text("mother").notNull().default("{}"),
+  father: text("father").notNull().default("{}"),
+  guardian: text("guardian").notNull().default("{}"),
+  emergency: text("emergency").notNull().default("{}"),
+  declaration: text("declaration").notNull().default("{}"),
+  documents: text("documents").notNull().default("[]"),
+  office: text("office").notNull().default("{}"),
+  behaviour: text("behaviour").notNull().default("{}"),
+  submissionNumber: integer("submission_number").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const behaviourAssessments = pgTable("behaviour_assessments", {
+  id: text("id").primaryKey(),
+  lastName: text("last_name").notNull(),
+  firstName: text("first_name").notNull(),
+  middleName: text("middle_name").notNull().default(""),
+  lastSchool: text("last_school").notNull(),
+  answers: text("answers").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const scholarshipRecords = pgTable("scholarship_records", {

@@ -1,3 +1,4 @@
+import { FileText, GraduationCap, ListOrdered } from "lucide-react";
 import { admissionDepartments, departmentLabel, type AdmissionDraft, type AdmissionRecord } from "@/lib/admissions";
 
 type PublishedAdmission = AdmissionDraft & { id: string };
@@ -25,28 +26,36 @@ export function AdmissionsView({ records, pageTitle }: { records: AdmissionRecor
                 </header>
                 <div className="admission-copy">
                   <p className="admission-department">{departmentLabel(record.department)}</p>
-                  <p>{record.introduction}</p>
+                  <p className="admission-lead">{record.introduction}</p>
                   <Eligibility draft={record} />
                   {record.documents.length > 0 ? (
-                    <>
-                      <h3>Required documents</h3>
-                      <ul>
-                        {record.documents.map((item) => <li key={item}>{item}</li>)}
+                    <section className="admission-section">
+                      <h3><FileText aria-hidden="true" /> Required documents</h3>
+                      <ul className="admission-docs">
+                        {record.documents.map((item, index) => (
+                          <li key={item} style={{ animationDelay: `${index * 70}ms` }}>
+                            <FileText aria-hidden="true" />
+                            <span>{item}</span>
+                          </li>
+                        ))}
                       </ul>
-                    </>
+                    </section>
                   ) : null}
                   {record.steps.length > 0 ? (
-                    <>
-                      <h3>Enrollment steps</h3>
-                      <ol>
-                        {record.steps.map((step) => (
-                          <li key={step.id}>
-                            <strong>{step.title}</strong>
-                            {step.description ? <span>{step.description}</span> : null}
+                    <section className="admission-section">
+                      <h3><ListOrdered aria-hidden="true" /> Enrollment steps</h3>
+                      <ol className="admission-steps">
+                        {record.steps.map((step, index) => (
+                          <li key={step.id} style={{ animationDelay: `${index * 90}ms` }}>
+                            <span className="admission-step-mark" aria-hidden="true">{index + 1}</span>
+                            <div>
+                              <strong>{step.title}</strong>
+                              {step.description ? <span>{step.description}</span> : null}
+                            </div>
                           </li>
                         ))}
                       </ol>
-                    </>
+                    </section>
                   ) : null}
                   {record.additional ? (
                     <>
@@ -65,20 +74,24 @@ export function AdmissionsView({ records, pageTitle }: { records: AdmissionRecor
 }
 
 function Eligibility({ draft }: { draft: AdmissionDraft }) {
-  const ages = draft.minAge !== null && draft.maxAge !== null
-    ? `Ages ${draft.minAge} to ${draft.maxAge}`
+  const ageValue = draft.minAge !== null && draft.maxAge !== null
+    ? `${draft.minAge} to ${draft.maxAge}`
     : draft.minAge !== null
-      ? `Minimum age ${draft.minAge}`
+      ? `${draft.minAge} and older`
       : draft.maxAge !== null
-        ? `Maximum age ${draft.maxAge}`
+        ? `Up to ${draft.maxAge}`
         : "";
-  if (!ages && !draft.gradeRange && !draft.eligibilityNote) return null;
+  if (!ageValue && !draft.gradeRange && !draft.eligibilityNote) return null;
   return (
-    <>
-      <h3>Eligibility</h3>
-      {ages ? <p>{ages}</p> : null}
-      {draft.gradeRange ? <p>{draft.gradeRange}</p> : null}
-      {draft.eligibilityNote ? <p>{draft.eligibilityNote}</p> : null}
-    </>
+    <section className="admission-section">
+      <h3><GraduationCap aria-hidden="true" /> Eligibility</h3>
+      {ageValue || draft.gradeRange ? (
+        <div className="admission-facts">
+          {ageValue ? <p style={{ animationDelay: "40ms" }}><span>Ages</span><strong>{ageValue}</strong></p> : null}
+          {draft.gradeRange ? <p style={{ animationDelay: "120ms" }}><span>Grades</span><strong>{draft.gradeRange}</strong></p> : null}
+        </div>
+      ) : null}
+      {draft.eligibilityNote ? <p className="admission-note">{draft.eligibilityNote}</p> : null}
+    </section>
   );
 }

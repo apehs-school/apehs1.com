@@ -13,7 +13,7 @@ import { activityDayLabel, dollarsToCents, eachIsoDate, formatActivityTime } fro
 import { isMealCategory } from "@/lib/menu";
 import { staffRoles } from "@/lib/staff";
 import { setNotice } from "@/lib/notice";
-import { putStoredObject } from "@/lib/storage";
+import { deleteStoredObject, putStoredObject } from "@/lib/storage";
 
 async function requireAdmin() {
   const user = await ensureCurrentUser();
@@ -102,14 +102,67 @@ export async function updateUserRole(formData: FormData) {
   revalidatePath("/admin/users");
 }
 
+const bulletinImageTypes = new Set(["image/jpeg", "image/png", "image/gif", "image/webp"]);
+
+function storedBulletinKeys(value: string | null | undefined) {
+  try {
+    const parsed = JSON.parse(value || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is string => typeof item === "string" && item.length > 0 && !item.includes(".."));
+  } catch {
+    return [];
+  }
+}
+
+async function bulletinImages(formData: FormData, existing: string[]) {
+  const keep = new Set(formData.getAll("keepImages").map((value) => clean(value)).filter((key) => existing.includes(key)));
+  const keys = existing.filter((key) => keep.has(key));
+  const uploads = formData.getAll("images").filter((file): file is File => file instanceof File && file.size > 0);
+  for (const file of uploads) {
+    if (keys.length >= 4) break;
+    if (!bulletinImageTypes.has(file.type) || file.size > 2 * 1024 * 1024) continue;
+    const objectKey = `news/${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 80)}`;
+    await putStoredObject("images", objectKey, Buffer.from(await file.arrayBuffer()), file.type);
+    keys.push(objectKey);
+  }
+  for (const key of existing) {
+    if (keys.includes(key)) continue;
+    try {
+      await deleteStoredObject("images", key);
+    } catch {
+      console.error("Could not remove a bulletin image");
+    }
+  }
+  return JSON.stringify(keys);
+}
+
 export async function createNews(formData: FormData) {
   const db = await requireAdmin();
   const title = clean(formData.get("title"));
   const body = clean(formData.get("body"));
-  const period = mealPeriod(formData);
-  if (!title || !body || !period) return;
-  await db.insert(news).values({ id: crypto.randomUUID(), title, body, eventDate: period.startsOn, endsOn: period.endsOn, published: false });
-  await setNotice("News added");
+  const eventDate = clean(formData.get("eventDate"));
+  const showFrom = clean(formData.get("showFrom"));
+  const endsOn = clean(formData.get("endsOn"));
+  const category = bulletinCategory(formData.get("category"));
+  const audience = bulletinAudience(formData.get("audience"));
+  if (!title || !body || !isoDate(eventDate) || !isoDate(showFrom)) return;
+  if (endsOn && !isoDate(endsOn)) return;
+  const images = await bulletinImages(formData, []);
+  await db.insert(news).values({
+    id: crypto.randomUUID(),
+    title,
+    body,
+    details: clean(formData.get("details")),
+    category,
+    audience,
+    eventDate,
+    showFrom,
+    endsOn: endsOn || null,
+    pinned: formData.get("pinned") === "on",
+    images,
+    published: false,
+  });
+  await setNotice("Bulletin saved as a draft");
   revalidatePath("/");
   revalidatePath("/admin/news");
   revalidatePath("/admin/content");
@@ -121,10 +174,27 @@ export async function updateNews(formData: FormData) {
   const id = clean(formData.get("id"));
   const title = clean(formData.get("title"));
   const body = clean(formData.get("body"));
-  const period = mealPeriod(formData);
-  if (!id || !title || !body || !period) return;
-  await db.update(news).set({ title, body, eventDate: period.startsOn, endsOn: period.endsOn }).where(eq(news.id, id));
-  await setNotice("News saved");
+  const eventDate = clean(formData.get("eventDate"));
+  const showFrom = clean(formData.get("showFrom"));
+  const endsOn = clean(formData.get("endsOn"));
+  if (!id || !title || !body || !isoDate(eventDate) || !isoDate(showFrom)) return;
+  if (endsOn && !isoDate(endsOn)) return;
+  const [current] = await db.select({ images: news.images }).from(news).where(eq(news.id, id)).limit(1);
+  if (!current) return;
+  const images = await bulletinImages(formData, storedBulletinKeys(current.images));
+  await db.update(news).set({
+    title,
+    body,
+    details: clean(formData.get("details")),
+    category: bulletinCategory(formData.get("category")),
+    audience: bulletinAudience(formData.get("audience")),
+    eventDate,
+    showFrom,
+    endsOn: endsOn || null,
+    pinned: formData.get("pinned") === "on",
+    images,
+  }).where(eq(news.id, id));
+  await setNotice("Bulletin saved");
   revalidatePath("/");
   revalidatePath("/admin/news");
   redirect("/admin/news");
@@ -145,7 +215,16 @@ export async function deleteNews(formData: FormData) {
   const db = await requireAdmin();
   const id = clean(formData.get("id"));
   if (!id) return;
+  const [current] = await db.select({ images: news.images }).from(news).where(eq(news.id, id)).limit(1);
+  if (!current) return;
   await db.delete(news).where(eq(news.id, id));
+  for (const key of storedBulletinKeys(current.images)) {
+    try {
+      await deleteStoredObject("images", key);
+    } catch {
+      console.error("Could not remove a bulletin image");
+    }
+  }
   await setNotice("News deleted");
   revalidatePath("/");
   revalidatePath("/admin/news");
@@ -226,6 +305,20 @@ async function uploadedMealImage(formData: FormData) {
   const objectKey = `${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(0, 80)}`;
   await putStoredObject("images", objectKey, Buffer.from(await file.arrayBuffer()), file.type);
   return objectKey;
+}
+
+function isoDate(value: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function bulletinCategory(value: FormDataEntryValue | null) {
+  const category = clean(value);
+  return ["Announcement", "Academics", "School events", "Achievements"].includes(category) ? category : "Announcement";
+}
+
+function bulletinAudience(value: FormDataEntryValue | null) {
+  const audience = clean(value);
+  return ["Everyone", "Parents", "Students", "Staff"].includes(audience) ? audience : "Everyone";
 }
 
 function mealPeriod(formData: FormData) {

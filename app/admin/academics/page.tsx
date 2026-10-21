@@ -12,7 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/db";
 import { pageEntries } from "@/db/schema";
-import { getAwardPage, listAdmissionRecords, listScholarshipRecords, listSitePages } from "@/lib/queries";
+import { AdmissionsPanels } from "@/components/admissions-panels";
+import { ApplicationTable } from "@/components/application-table";
+import { getAwardPage, listAdmissionApplications, listAdmissionRecords, listScholarshipRecords, listSitePages } from "@/lib/queries";
 import { asc, eq } from "drizzle-orm";
 
 const fieldClass = "h-11 text-base";
@@ -27,6 +29,7 @@ export default async function AcademicsAdminPage({ searchParams }: { searchParam
     : [];
   const awards = active === "awards" ? await getAwardPage() : null;
   const admissions = active === "admissions" ? await listAdmissionRecords() : null;
+  const applications = active === "admissions" ? await listAdmissionApplications() : null;
   const scholarships = active === "scholarship" ? await listScholarshipRecords() : null;
   const structured = active === "academics" || active === "awards" || active === "admissions" || active === "scholarship";
 
@@ -37,10 +40,52 @@ export default async function AcademicsAdminPage({ searchParams }: { searchParam
       <PageEditors pages={pages} active={active} basePath="/admin/academics" omit={structured && active ? [active] : []} />
       {active === "academics" ? <ProgramTable rows={programs} /> : null}
       {awards ? <AwardsEditor initial={awards} /> : null}
-      {admissions ? <AdmissionsEditor initial={admissions.records} /> : null}
+      {admissions && applications ? (
+        <AdmissionsPanels
+          records={<AdmissionsEditor initial={admissions.records} />}
+          applications={<ApplicationTable title="Online Student Admission Application" rows={applications.filter((row) => row.entryType !== "behaviour").map(toApplicationRow)} />}
+          behaviour={<ApplicationTable title="Online Student Behaviour Assessment" rows={applications.filter((row) => row.entryType === "behaviour").map(toApplicationRow)} />}
+        />
+      ) : null}
       {scholarships ? <ScholarshipEditor initial={scholarships} /> : null}
     </>
   );
+}
+
+function toApplicationRow(row: Awaited<ReturnType<typeof listAdmissionApplications>>[number]) {
+  return {
+    id: row.id,
+    submissionNumber: row.submissionNumber,
+    photoFileId: row.photoFileId ?? "",
+    firstName: row.firstName,
+    lastName: row.lastName,
+    middleName: row.middleName,
+    sex: row.sex,
+    academicYear: row.academicYear,
+    birthDate: row.birthDate,
+    birthMonth: row.birthMonth,
+    birthYear: row.birthYear,
+    age: row.age,
+    birthPlace: row.birthPlace,
+    nationality: row.nationality,
+    address: row.address,
+    nsrn: row.nsrn,
+    gradeSeeking: row.gradeSeeking,
+    church: row.church,
+    pastor: row.pastor,
+    entryType: row.entryType,
+    lastSchool: row.lastSchool,
+    lastGrade: row.lastGrade,
+    createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+    documents: row.documents,
+    office: row.office,
+    mother: row.mother,
+    father: row.father,
+    guardian: row.guardian,
+    emergency: row.emergency,
+    declaration: row.declaration,
+    behaviour: row.behaviour ?? "{}",
+  };
 }
 
 function ProgramTable({ rows }: { rows: { id: string; title: string; body: string; published: boolean }[] }) {

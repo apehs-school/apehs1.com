@@ -1,11 +1,12 @@
 import { and, asc, desc, eq, gte, inArray, isNull, lt, lte } from "drizzle-orm";
 import { getDb } from "@/db";
-import { activities, admissionMeta, admissionRecords, awardPages, contactDetails, contactMessages, contactReplies, devotionals, events, fees, guardians, menuCategories, menuItems, news, pageEntries, payments, scholarshipRecords, sitePages, staffMembers, storedFiles, students, users } from "@/db/schema";
+import { activities, admissionApplications, admissionMeta, admissionRecords, awardPages, behaviourAssessments, contactDetails, contactMessages, contactReplies, devotionals, events, fees, guardians, menuCategories, menuItems, news, pageEntries, payments, scholarshipRecords, sitePages, staffMembers, storedFiles, students, users } from "@/db/schema";
 import { eventsByDate, fallbackEvents } from "@/lib/fallback";
 import { jamaicaDate } from "@/lib/format";
 import { isMealCategory, mealCategories } from "@/lib/menu";
 import { legacyAdmission, legacyAdmissionId, snapshotOf, toAdmissionRecord, type AdmissionRecord } from "@/lib/admissions";
 import { awardDefaults, parseAwardDocument } from "@/lib/awards";
+import { cleanBehaviour, type BehaviourAnswers } from "@/lib/behaviour";
 import { toScholarshipRecord, type ScholarshipRecord } from "@/lib/scholarships";
 import { activityDefaults, pageDefault, sitePageDefaults } from "@/lib/site-content";
 
@@ -19,13 +20,24 @@ async function read<T>(query: () => Promise<T>, fallback: T): Promise<T> {
   }
 }
 
+export function bulletinImageKeys(value: string | null | undefined) {
+  try {
+    const parsed = JSON.parse(value || "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is string => typeof item === "string" && item.length > 0 && !item.includes(".."));
+  } catch {
+    return [];
+  }
+}
+
 export async function getNewsItems() {
   const db = getDb();
   if (!db) return [];
-  return read(
-    () => db.select().from(news).where(eq(news.published, true)).orderBy(desc(news.eventDate)).limit(6),
-    [],
-  );
+  const today = jamaicaDate();
+  const rows = await read(() => db.select().from(news).where(eq(news.published, true)), []);
+  return rows
+    .filter((row) => (!row.showFrom || row.showFrom <= today) && (!row.endsOn || row.endsOn >= today))
+    .sort((a, b) => Number(b.pinned) - Number(a.pinned) || b.eventDate.localeCompare(a.eventDate));
 }
 
 function eachDate(start: string, end: string) {
@@ -319,6 +331,37 @@ export async function listAdmissionRecords(): Promise<{ migrated: boolean; recor
     console.error(error instanceof Error ? error.message : "Could not read admissions");
     return { migrated: false, records: [] };
   }
+}
+
+export async function listAdmissionApplications() {
+  const db = getDb();
+  if (!db) return [];
+  return read(() => db.select().from(admissionApplications).orderBy(desc(admissionApplications.createdAt)), []);
+}
+
+export async function listBehaviourAssessments(): Promise<{ id: string; lastName: string; firstName: string; middleName: string; lastSchool: string; createdAt: string; answers: BehaviourAnswers }[]> {
+  const db = getDb();
+  if (!db) return [];
+  return read(async () => {
+    const rows = await db.select().from(behaviourAssessments).orderBy(desc(behaviourAssessments.createdAt));
+    return rows.map((row) => {
+      let parsed: Partial<BehaviourAnswers> = {};
+      try {
+        parsed = JSON.parse(row.answers) as Partial<BehaviourAnswers>;
+      } catch {
+        parsed = {};
+      }
+      return {
+        id: row.id,
+        lastName: row.lastName,
+        firstName: row.firstName,
+        middleName: row.middleName,
+        lastSchool: row.lastSchool,
+        createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
+        answers: cleanBehaviour(parsed),
+      };
+    });
+  }, []);
 }
 
 export async function listScholarshipRecords(): Promise<ScholarshipRecord[]> {
