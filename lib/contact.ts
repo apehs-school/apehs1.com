@@ -2,7 +2,9 @@ import { jamaicaParishes } from "@/lib/profile";
 
 export type SocialLink = { name: string; url: string };
 
-export function contactAddressParts(details: { address: string; street: string; apt: string; town: string; parish: string }) {
+type AddressParts = { address: string; street: string; apt: string; town: string; parish: string };
+
+export function contactAddressParts<T extends AddressParts>(details: T): T {
   if (details.street || details.apt || details.town || details.parish) return details;
   const match = details.address.match(/^(.*?),\s*([^,]+),\s*Jamaica$/i);
   if (!match) return { ...details, street: details.address };
