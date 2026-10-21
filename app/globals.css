@@ -3081,19 +3081,41 @@ button.profile-action {
   font-weight: 600;
 }
 
-.scholarship-band p {
-  margin: 0;
-  color: #f6e3a8;
-}
-
-.scholarship-band p:first-child {
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+.scholarship-band {
+  display: grid;
+  grid-template-columns: 5.75rem minmax(0, 1fr);
+  align-items: stretch;
+  background: #fff;
 }
 
 .scholarship-band h2 {
-  margin: 0.15rem 0;
+  margin: 0;
+  padding: 0.9rem 1.1rem 0.1rem;
+  color: #0b1f3a;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.55rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.scholarship-award {
+  margin: 0;
+  padding: 0.15rem 1.1rem 0.95rem;
+  color: #3e5680;
+  font-size: 1.02rem;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.scholarship-year {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  background: #0d47a1;
+  color: #f6e3a8;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .scholarship-copy {

@@ -8,10 +8,12 @@ export function ScholarshipView({ records, preview = false }: { records: Scholar
       {published.length === 0 ? <p className="scholarship-empty">No scholarships have been published yet.</p> : (
         published.map((record, index) => (
           <section className="awards-panel" key={record.id} style={{ animationDelay: `${index * 60}ms` }}>
-            <header className="awards-band scholarship-band">
-              <p>{record.year}</p>
-              <h2>{record.studentName}</h2>
-              <p>{record.awardName}</p>
+            <header className="scholarship-band">
+              <p className="scholarship-year">{record.year}</p>
+              <div>
+                <h2>{record.studentName}</h2>
+                <p className="scholarship-award">{record.awardName}</p>
+              </div>
             </header>
             <div className="scholarship-copy">
               <p>
