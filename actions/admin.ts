@@ -1,14 +1,15 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getDb } from "@/db";
-import { activities, devotionals, events, fees, guardians, menuCategories, menuItems, news, pageEntries, sitePages, staffMembers, students, users } from "@/db/schema";
+import { activities, awardPages, devotionals, events, fees, guardians, menuCategories, menuItems, news, pageEntries, sitePages, staffMembers, students, users } from "@/db/schema";
 import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
 import { fallbackEvents, fallbackMenu, fallbackNews, fallbackWord } from "@/lib/fallback";
+import { validateAwards, type AwardsDocument } from "@/lib/awards";
 import { activityDefaults, pageDefault, sitePageDefaults } from "@/lib/site-content";
-import { dollarsToCents } from "@/lib/format";
+import { activityDayLabel, dollarsToCents, eachIsoDate, formatActivityTime } from "@/lib/format";
 import { isMealCategory } from "@/lib/menu";
 import { staffRoles } from "@/lib/staff";
 import { setNotice } from "@/lib/notice";
@@ -415,6 +416,127 @@ export async function savePage(formData: FormData) {
   if (group === "about") redirect(`/admin/about?tab=${slug}`);
 }
 
+function programGrade(formData: FormData) {
+  const from = clean(formData.get("grade"));
+  const to = clean(formData.get("gradeTo"));
+  const numbered = /^(?:[1-9]|1[0-2])$/;
+  if (to) {
+    if (!numbered.test(from) || !numbered.test(to)) return "";
+    const start = Math.min(Number(from), Number(to));
+    const end = Math.max(Number(from), Number(to));
+    return start === end ? String(start) : `${start} to ${end}`;
+  }
+  if (numbered.test(from) || from === "All grades") return from;
+  return "";
+}
+
+export async function saveAwards(input: AwardsDocument): Promise<{ ok: true; value: AwardsDocument } | { ok: false; error: string }> {
+  const db = await requireAdmin();
+  const parsed = validateAwards(input);
+  if (!parsed.ok) return parsed;
+  const value = parsed.value;
+  const known = pageDefault("awards");
+  try {
+    await db
+      .insert(awardPages)
+      .values({
+        slug: "awards",
+        title: value.title,
+        introduction: value.introduction,
+        pepResults: JSON.stringify(value.pepResults),
+        assessments: JSON.stringify(value.assessments),
+        awards: JSON.stringify(value.awards),
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: awardPages.slug,
+        set: {
+          title: value.title,
+          introduction: value.introduction,
+          pepResults: JSON.stringify(value.pepResults),
+          assessments: JSON.stringify(value.assessments),
+          awards: JSON.stringify(value.awards),
+          updatedAt: new Date(),
+        },
+      });
+    const [current] = await db.select().from(sitePages).where(eq(sitePages.slug, "awards")).limit(1);
+    await db
+      .insert(sitePages)
+      .values({
+        slug: "awards",
+        title: value.title,
+        body: current?.body ?? known?.body ?? "",
+        group: "academics",
+        published: current?.published ?? true,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: sitePages.slug,
+        set: { title: value.title, updatedAt: new Date() },
+      });
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : "Could not save awards");
+    return { ok: false, error: "Could not save awards. Your entries are still here." };
+  }
+  await setNotice("Awards saved");
+  revalidatePath("/awards");
+  revalidatePath("/admin/academics");
+  return { ok: true, value };
+}
+
+export async function createAcademicProgram(formData: FormData) {
+  const db = await requireAdmin();
+  const subject = clean(formData.get("subject"));
+  const grade = programGrade(formData);
+  if (!subject || !grade) return;
+  await db.insert(pageEntries).values({
+    id: crypto.randomUUID(),
+    section: "academics",
+    title: subject,
+    body: grade,
+    published: false,
+  });
+  await setNotice("Program added");
+  revalidatePath("/academics");
+  revalidatePath("/admin/academics");
+  redirect("/admin/academics?tab=academics");
+}
+
+export async function updateAcademicProgram(formData: FormData) {
+  const db = await requireAdmin();
+  const id = clean(formData.get("id"));
+  const subject = clean(formData.get("subject"));
+  const grade = programGrade(formData);
+  if (!id || !subject || !grade) return;
+  await db.update(pageEntries).set({ title: subject, body: grade }).where(and(eq(pageEntries.id, id), eq(pageEntries.section, "academics")));
+  await setNotice("Program saved");
+  revalidatePath("/academics");
+  revalidatePath("/admin/academics");
+  redirect("/admin/academics?tab=academics");
+}
+
+export async function setAcademicProgramPublished(formData: FormData) {
+  const db = await requireAdmin();
+  const id = clean(formData.get("id"));
+  if (!id) return;
+  const published = clean(formData.get("published")) === "true";
+  await db.update(pageEntries).set({ published }).where(and(eq(pageEntries.id, id), eq(pageEntries.section, "academics")));
+  await setNotice(published ? "Published" : "Unpublished");
+  revalidatePath("/academics");
+  revalidatePath("/admin/academics");
+}
+
+export async function deleteAcademicProgram(formData: FormData) {
+  const db = await requireAdmin();
+  const id = clean(formData.get("id"));
+  if (!id) return;
+  await db.delete(pageEntries).where(and(eq(pageEntries.id, id), eq(pageEntries.section, "academics")));
+  await setNotice("Program deleted");
+  revalidatePath("/academics");
+  revalidatePath("/admin/academics");
+  redirect("/admin/academics?tab=academics");
+}
+
 export async function createPageEntry(formData: FormData) {
   const db = await requireAdmin();
   const section = clean(formData.get("section"));
@@ -660,16 +782,43 @@ export async function deleteActivityPage(formData: FormData) {
   redirect("/admin/activities");
 }
 
+function activitySchedule(formData: FormData) {
+  const period = mealPeriod(formData);
+  if (!period) return null;
+  const dates = eachIsoDate(period.startsOn, period.endsOn);
+  const postedDates = formData.getAll("sessionDate").map((value) => String(value));
+  if (postedDates.length > 0) {
+    const postedStarts = formData.getAll("sessionStart").map((value) => String(value));
+    const postedEnds = formData.getAll("sessionEnd").map((value) => String(value));
+    if (dates.length === 0 || dates.length > 90 || postedDates.length === 0 || postedDates.length !== postedStarts.length || postedDates.length !== postedEnds.length) return null;
+    const allowed = new Set(dates);
+    const seen = new Set<string>();
+    for (let index = 0; index < postedDates.length; index += 1) {
+      const date = postedDates[index];
+      if (!allowed.has(date) || seen.has(date) || !formatActivityTime(postedStarts[index]) || !formatActivityTime(postedEnds[index])) return null;
+      seen.add(date);
+    }
+    const ordered = dates.filter((date) => seen.has(date));
+    if (ordered.some((date, index) => date !== postedDates[index])) return null;
+    return {
+      ...period,
+      schedule: ordered.map((date, index) => `${activityDayLabel(date)} · ${formatActivityTime(postedStarts[index])} – ${formatActivityTime(postedEnds[index])}`).join("\n"),
+    };
+  }
+  const schedule = String(formData.get("schedule") ?? "").trim();
+  if (!schedule) return null;
+  return { ...period, schedule };
+}
+
 export async function createActivity(formData: FormData) {
   const db = await requireAdmin();
   const name = clean(formData.get("name"));
-  const schedule = String(formData.get("schedule") ?? "").trim();
-  const period = mealPeriod(formData);
-  if (!name || !schedule || !period) return;
+  const period = activitySchedule(formData);
+  if (!name || !period) return;
   await db.insert(activities).values({
     id: crypto.randomUUID(),
     name,
-    schedule,
+    schedule: period.schedule,
     venue: clean(formData.get("venue")),
     lead: clean(formData.get("lead")),
     cost: clean(formData.get("cost")),
@@ -689,14 +838,13 @@ export async function updateActivity(formData: FormData) {
   const db = await requireAdmin();
   const id = clean(formData.get("id"));
   const name = clean(formData.get("name"));
-  const schedule = String(formData.get("schedule") ?? "").trim();
-  const period = mealPeriod(formData);
-  if (!id || !name || !schedule || !period) return;
+  const period = activitySchedule(formData);
+  if (!id || !name || !period) return;
   await db
     .update(activities)
     .set({
       name,
-      schedule,
+      schedule: period.schedule,
       venue: clean(formData.get("venue")),
       lead: clean(formData.get("lead")),
       cost: clean(formData.get("cost")),

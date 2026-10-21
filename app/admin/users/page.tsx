@@ -1,5 +1,6 @@
 import { grantAdminPrivilege, removeAdminPrivilege, setAccountStatus, setUserBan } from "@/actions/user-admin";
 import { DeleteButton } from "@/components/delete-button";
+import { UserRecordButton } from "@/components/user-record";
 import { AdminField, adminSelectClass } from "@/components/admin-field";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -130,12 +131,13 @@ function AccountTable({
             <SortHead label="Email" column="email" view={view} />
             <SortHead label="Status" column="status" view={view} />
             <TableHead>Access</TableHead>
+            <TableHead>Record</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {window.rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5}>No accounts match this view.</TableCell>
+              <TableCell colSpan={6}>No accounts match this view.</TableCell>
             </TableRow>
           ) : (
             window.rows.map((account) => (
@@ -170,6 +172,24 @@ function AccountTable({
                       />
                     </span>
                   )}
+                </TableCell>
+                <TableCell>
+                  <UserRecordButton
+                    record={{
+                      id: account.id,
+                      name: accountLabel(account),
+                      email: account.email,
+                      phone: account.phone,
+                      street: account.street,
+                      apt: account.apt,
+                      town: account.town,
+                      parish: account.parish,
+                      status: account.accountStatus,
+                      banned: account.banned,
+                      question: account.securityQuestion,
+                      questionTwo: account.securityQuestionTwo,
+                    }}
+                  />
                 </TableCell>
               </TableRow>
             ))

@@ -145,3 +145,39 @@ export async function removeAdminPrivilege(formData: FormData) {
   refresh();
   redirect(returnPath(formData, "privileges"));
 }
+
+export async function revealSecurityAnswers(
+  targetId: string,
+  proof: { password?: string; emailVerified?: boolean },
+) {
+  const user = await ensureCurrentUser();
+  if (!user || !hasAdminAccess(user)) return { error: "You do not have access to this record." };
+  const db = getDb();
+  if (!db) return { error: "This record could not be opened." };
+  try {
+    const client = await clerkClient();
+    const clerkUser = await client.users.getUser(user.clerkUserId);
+    if (clerkUser.passwordEnabled !== false) {
+      const password = proof.password?.trim() ?? "";
+      if (password.length < 8) return { error: "Enter your password." };
+      try {
+        await client.users.verifyPassword({ userId: user.clerkUserId, password });
+      } catch {
+        return { error: "That password does not match this account." };
+      }
+    } else if (!proof.emailVerified) {
+      return { error: "Verify the email code before viewing the answers." };
+    }
+  } catch {
+    return { error: "Verification did not finish." };
+  }
+  const [target] = await db.select().from(users).where(eq(users.id, targetId)).limit(1);
+  if (!target) return { error: "This account could not be found." };
+  return {
+    error: null,
+    answer: target.securityAnswer,
+    answerTwo: target.securityAnswerTwo,
+    protectedAnswer: !target.securityAnswer && Boolean(target.securityAnswerHash),
+    protectedAnswerTwo: !target.securityAnswerTwo && Boolean(target.securityAnswerTwoHash),
+  };
+}

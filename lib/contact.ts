@@ -1,4 +1,15 @@
+import { jamaicaParishes } from "@/lib/profile";
+
 export type SocialLink = { name: string; url: string };
+
+export function contactAddressParts(details: { address: string; street: string; apt: string; town: string; parish: string }) {
+  if (details.street || details.apt || details.town || details.parish) return details;
+  const match = details.address.match(/^(.*?),\s*([^,]+),\s*Jamaica$/i);
+  if (!match) return { ...details, street: details.address };
+  const place = match[2].trim();
+  const parish = jamaicaParishes.find((name) => name.toLowerCase() === place.toLowerCase()) ?? "";
+  return { ...details, street: match[1].trim(), town: place, parish };
+}
 
 export function parseSocials(value: string): SocialLink[] {
   try {

@@ -24,7 +24,8 @@ export const jamaicaParishes = [
 ] as const;
 
 export function formatAddress(parts: { street: string; apt: string; town: string; parish: string }) {
-  return [parts.street, parts.apt, parts.town, parts.parish].map((part) => part.trim()).filter(Boolean).join(", ");
+  const items = [parts.street, parts.apt, parts.town, parts.parish].map((part) => part.trim()).filter(Boolean);
+  return items.filter((part, index) => part.toLowerCase() !== items[index - 1]?.toLowerCase()).join(", ");
 }
 
 export const profileStatuses = [

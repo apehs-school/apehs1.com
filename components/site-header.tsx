@@ -1,10 +1,15 @@
 import { SiteNav } from "@/components/site-nav";
 import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
-import { listUserMessageAlerts } from "@/lib/queries";
+import { listOfficeMessageAlerts, listUserMessageAlerts } from "@/lib/queries";
 
 export async function SiteHeader() {
   const user = await ensureCurrentUser();
-  const alerts = user ? await listUserMessageAlerts(user.id) : [];
+  const personal = user ? await listUserMessageAlerts(user.id) : [];
+  const office = user && hasAdminAccess(user) ? await listOfficeMessageAlerts() : [];
+  const alerts = [
+    ...personal,
+    ...office.filter((item) => !personal.some((message) => message.id === item.id)),
+  ];
 
   return (
     <header className="border-b border-[#d9e0ea] bg-white text-[#0b1f3a] shadow-sm">
@@ -27,7 +32,7 @@ export async function SiteHeader() {
           className="h-24 w-auto drop-shadow-[0_8px_18px_rgba(13,71,161,0.28)] sm:h-32"
         />
       </div>
-      <SiteNav alerts={alerts} showAdmin={Boolean(user && hasAdminAccess(user))} />
+      <SiteNav alerts={alerts} showAdmin={Boolean(user && hasAdminAccess(user))} signedIn={Boolean(user)} />
     </header>
   );
 }

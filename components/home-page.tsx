@@ -87,28 +87,6 @@ export async function HomePageContent() {
       </section>
 
       <SchoolCalendar events={events} />
-
-      <section className="border-t border-[#d9e0ea] bg-white">
-        <div className="mx-auto grid max-w-6xl gap-6 px-6 py-10 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <p className="text-xs font-medium tracking-[0.22em] text-[#9a7420] uppercase">Address</p>
-            <p className="mt-2">37 Hope Road, Kingston, Jamaica</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium tracking-[0.22em] text-[#9a7420] uppercase">Telephone</p>
-            <p className="mt-2">876-927-8874</p>
-            <p>876-486-9611</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium tracking-[0.22em] text-[#9a7420] uppercase">Email</p>
-            <p className="mt-2">ardenne.prep.saw@moeschools.edu.jm</p>
-          </div>
-          <div>
-            <p className="text-xs font-medium tracking-[0.22em] text-[#9a7420] uppercase">Hours</p>
-            <p className="mt-2">7:30 AM – 5:05 PM</p>
-          </div>
-        </div>
-      </section>
     </main>
   );
 }

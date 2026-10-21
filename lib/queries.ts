@@ -1,9 +1,12 @@
-import { and, asc, desc, eq, gte, inArray, isNull, lte } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, isNull, lt, lte } from "drizzle-orm";
 import { getDb } from "@/db";
-import { activities, contactDetails, contactMessages, contactReplies, devotionals, events, fees, guardians, menuCategories, menuItems, news, pageEntries, payments, sitePages, staffMembers, storedFiles, students, users } from "@/db/schema";
+import { activities, admissionMeta, admissionRecords, awardPages, contactDetails, contactMessages, contactReplies, devotionals, events, fees, guardians, menuCategories, menuItems, news, pageEntries, payments, scholarshipRecords, sitePages, staffMembers, storedFiles, students, users } from "@/db/schema";
 import { eventsByDate, fallbackEvents } from "@/lib/fallback";
 import { jamaicaDate } from "@/lib/format";
 import { isMealCategory, mealCategories } from "@/lib/menu";
+import { legacyAdmission, legacyAdmissionId, snapshotOf, toAdmissionRecord, type AdmissionRecord } from "@/lib/admissions";
+import { awardDefaults, parseAwardDocument } from "@/lib/awards";
+import { toScholarshipRecord, type ScholarshipRecord } from "@/lib/scholarships";
 import { activityDefaults, pageDefault, sitePageDefaults } from "@/lib/site-content";
 
 async function read<T>(query: () => Promise<T>, fallback: T): Promise<T> {
@@ -276,6 +279,69 @@ export async function getLinkedStudents(userId: string) {
   );
 }
 
+export async function listAdmissionRecords(): Promise<{ migrated: boolean; records: AdmissionRecord[] }> {
+  const db = getDb();
+  if (!db) return { migrated: false, records: [] };
+  try {
+    const [marker] = await db.select().from(admissionMeta).where(eq(admissionMeta.id, "admissions")).limit(1);
+    if (!marker) {
+      const [page] = await db.select().from(sitePages).where(eq(sitePages.slug, "admissions")).limit(1);
+      const visible = !page || (page.published && page.group !== "hidden");
+      const seed = legacyAdmission(visible);
+      const [existing] = await db.select({ id: admissionRecords.id }).from(admissionRecords).where(eq(admissionRecords.id, legacyAdmissionId)).limit(1);
+      if (!existing) {
+        await db.insert(admissionRecords).values({
+          id: seed.id,
+          title: seed.title,
+          department: seed.department,
+          introduction: seed.introduction,
+          minAge: seed.minAge,
+          maxAge: seed.maxAge,
+          gradeRange: seed.gradeRange,
+          eligibilityNote: seed.eligibilityNote,
+          documents: JSON.stringify(seed.documents),
+          steps: JSON.stringify(seed.steps),
+          additional: seed.additional,
+          published: seed.published,
+          publishedSnapshot: seed.publishedSnapshot ? JSON.stringify(snapshotOf(seed)) : null,
+          createdAt: new Date(seed.createdAt),
+          updatedAt: new Date(seed.updatedAt),
+        });
+      }
+      await db.insert(admissionMeta).values({ id: "admissions" }).onConflictDoNothing();
+    }
+    const rows = await db.select().from(admissionRecords).orderBy(desc(admissionRecords.updatedAt));
+    return { migrated: true, records: rows.flatMap((row) => {
+      const record = toAdmissionRecord(row);
+      return record ? [record] : [];
+    }) };
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : "Could not read admissions");
+    return { migrated: false, records: [] };
+  }
+}
+
+export async function listScholarshipRecords(): Promise<ScholarshipRecord[]> {
+  const db = getDb();
+  if (!db) return [];
+  return read(async () => {
+    const rows = await db.select().from(scholarshipRecords).orderBy(desc(scholarshipRecords.updatedAt));
+    return rows.flatMap((row) => {
+      const record = toScholarshipRecord(row);
+      return record ? [record] : [];
+    });
+  }, []);
+}
+
+export async function getAwardPage() {
+  const db = getDb();
+  if (!db) return awardDefaults;
+  const rows = await read(() => db.select().from(awardPages).where(eq(awardPages.slug, "awards")).limit(1), []);
+  const row = rows[0];
+  if (!row) return awardDefaults;
+  return parseAwardDocument(row) ?? awardDefaults;
+}
+
 export async function getSitePage(slug: string) {
   const fallback = pageDefault(slug);
   const db = getDb();
@@ -293,6 +359,15 @@ export async function listPublishedStaff() {
   if (!db) return [];
   return read(
     () => db.select().from(staffMembers).where(eq(staffMembers.published, true)).orderBy(asc(staffMembers.createdAt)),
+    [],
+  );
+}
+
+export async function listPublishedActivityPages() {
+  const db = getDb();
+  if (!db) return [];
+  return read(
+    () => db.select().from(sitePages).where(and(eq(sitePages.group, "activities"), eq(sitePages.published, true))).orderBy(asc(sitePages.title)),
     [],
   );
 }
@@ -318,9 +393,22 @@ export async function listSitePages(group?: string) {
   });
 }
 
+export async function retireEndedActivities() {
+  const db = getDb();
+  if (!db) return;
+  const today = jamaicaDate();
+  try {
+    await db.update(activities).set({ published: false }).where(and(eq(activities.published, true), lt(activities.endsOn, today)));
+  } catch (error) {
+    const code = (error as { cause?: { code?: string } }).cause?.code;
+    console.error(code ? `Could not unpublish ended activities (${code})` : "Could not unpublish ended activities");
+  }
+}
+
 export async function listActivities() {
   const db = getDb();
   if (!db) return activityDefaults.map((item, index) => ({ id: `default-${index}`, ...item, note: item.note || null }));
+  await retireEndedActivities();
   const rows = await read(() => db.select().from(activities), []);
   if (rows.length === 0) return activityDefaults.map((item, index) => ({ id: `default-${index}`, ...item, note: item.note || null }));
   return rows.filter((item) => item.published);
@@ -354,6 +442,10 @@ export async function getStoredFile(id: string) {
 const contactFallback = {
   id: "school",
   address: "37 Hope Road, Kingston, Jamaica",
+  street: "37 Hope Road",
+  apt: "",
+  town: "Kingston",
+  parish: "Kingston",
   telephone: "876-927-8874 | 876-486-9611",
   whatsapp: "",
   email: "ardenne.prep.saw@moeschools.edu.jm",
@@ -397,16 +489,37 @@ export async function listUserMessageAlerts(userId: string) {
     [],
   );
   const replies = await listContactReplies(messages.map((message) => message.id));
-  return messages.flatMap((message) => {
+  return messages.map((message) => {
     const adminReplies = replies.filter((reply) => reply.messageId === message.id && reply.authorRole === "admin");
-    if (adminReplies.length === 0) return [];
     const latest = adminReplies[adminReplies.length - 1];
-    return [{
+    return {
       id: message.id,
       subject: message.subject,
-      preview: latest.body,
+      preview: latest?.body || "Waiting for a reply.",
       unread: adminReplies.some((reply) => !reply.readAt),
-    }];
+      href: `/contact?chat=${message.id}`,
+    };
+  });
+}
+
+export async function listOfficeMessageAlerts() {
+  const db = getDb();
+  if (!db) return [];
+  const messages = await read(
+    () => db.select().from(contactMessages).where(and(isNull(contactMessages.deletedAt), isNull(contactMessages.resolvedAt))).orderBy(desc(contactMessages.createdAt)),
+    [],
+  );
+  const replies = await listContactReplies(messages.map((message) => message.id));
+  return messages.map((message) => {
+    const userReplies = replies.filter((reply) => reply.messageId === message.id && reply.authorRole === "user");
+    const latest = userReplies[userReplies.length - 1];
+    return {
+      id: message.id,
+      subject: message.subject,
+      preview: latest?.body || message.body,
+      unread: !message.openedAt || userReplies.some((reply) => !reply.readAt),
+      href: `/admin/contact?reply=${message.id}`,
+    };
   });
 }
 

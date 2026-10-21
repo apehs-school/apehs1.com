@@ -1,11 +1,13 @@
-import { deleteContactMessage, markMessageOpened, purgeContactMessage } from "@/actions/contact";
+import { deleteContactMessage, markMessageOpened, purgeContactMessage, resolveContactMessage } from "@/actions/contact";
 import { ContactDetailsForm } from "@/components/contact-details-form";
 import { DeleteButton } from "@/components/delete-button";
 import { MessageChat } from "@/components/message-chat";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBackdrop, DialogPopup, DialogPortal, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { parseSocials } from "@/lib/contact";
+import { contactAddressParts, parseSocials } from "@/lib/contact";
+import { formatChatTime } from "@/lib/format";
+import { publicObjectUrl } from "@/lib/storage";
 import { getContactDetails, listContactMessages, listContactReplies } from "@/lib/queries";
 
 export default async function ContactAdminPage({ searchParams }: { searchParams: Promise<{ reply?: string; view?: string; tab?: string }> }) {
@@ -13,10 +15,15 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
   const history = tab === "history";
   const focusId = view || reply;
   if (focusId) await markMessageOpened(focusId);
-  const details = await getContactDetails();
+  const details = contactAddressParts(await getContactDetails());
   const messages = await listContactMessages();
   const replies = await listContactReplies(messages.map((message) => message.id));
-  const visible = messages.filter((message) => (history ? Boolean(message.deletedAt || message.openedAt) : !message.deletedAt && !message.openedAt));
+  const fresh = (messageId: string, openedAt: Date | null) => {
+    const fromSender = replies.filter((item) => item.messageId === messageId && item.authorRole === "user");
+    return !openedAt || fromSender.some((item) => !item.readAt);
+  };
+  const visible = messages.filter((message) => (history ? Boolean(message.deletedAt || message.resolvedAt) : !message.deletedAt && !message.resolvedAt));
+  const backHref = history ? "/admin/contact?tab=history" : "/admin/contact";
   const openMessage = messages.find((message) => message.id === reply);
   const viewedMessage = messages.find((message) => message.id === view);
 
@@ -26,7 +33,10 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
         <h1>Contact us</h1>
         <p className="text-sm text-muted-foreground">These details appear on the public contact page.</p>
         <ContactDetailsForm
-          address={details.address}
+          street={details.street}
+          apt={details.apt}
+          town={details.town}
+          parish={details.parish}
           telephone={details.telephone}
           whatsapp={details.whatsapp}
           email={details.email}
@@ -45,17 +55,17 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
               <TableHead>Subject</TableHead>
               <TableHead>Message</TableHead>
               <TableHead>Received</TableHead>
-              {history ? <TableHead>Status</TableHead> : null}
+              <TableHead>Status</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {visible.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={history ? 6 : 5}>{history ? "No message history yet." : "No messages yet."}</TableCell>
+                <TableCell colSpan={6}>{history ? "No message history yet." : "No messages yet."}</TableCell>
               </TableRow>
             ) : visible.map((message) => (
-              <TableRow key={message.id}>
+              <TableRow key={message.id} className={!history && fresh(message.id, message.openedAt) ? "message-fresh" : undefined}>
                 <TableCell className="whitespace-normal">
                   <strong>{message.name}</strong>
                   <div className="text-sm text-muted-foreground">{message.email}</div>
@@ -65,11 +75,36 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
                   <p className="line-clamp-2">{message.body}</p>
                 </TableCell>
                 <TableCell className="whitespace-normal">
-                  {new Date(message.createdAt).toLocaleString("en-JM", { dateStyle: "medium", timeStyle: "short", timeZone: "America/Jamaica" })}
+                  {formatChatTime(message.createdAt)}
                 </TableCell>
-                {history ? <TableCell>{message.deletedAt ? "Deleted" : "Open"}</TableCell> : null}
+                <TableCell className="whitespace-normal">
+                  {history ? (
+                    message.deletedAt ? (
+                      <span>Deleted by {message.deletedBy || "Admin"} · {formatChatTime(message.deletedAt)}</span>
+                    ) : (
+                      <span>Resolved by {message.resolvedBy || "Admin"} · {formatChatTime(message.resolvedAt ?? message.createdAt)}</span>
+                    )
+                  ) : fresh(message.id, message.openedAt) ? (
+                    <span className="message-new">New</span>
+                  ) : (
+                    <span>
+                      <span className="message-open">Open</span>
+                      {message.openedBy ? <span className="message-actor">{message.openedBy}</span> : null}
+                    </span>
+                  )}
+                </TableCell>
                 <TableCell className="whitespace-normal">
                   <div className="flex flex-wrap justify-end gap-2">
+                    {history ? null : (
+                      <DeleteButton
+                        action={resolveContactMessage}
+                        id={message.id}
+                        label="Resolved"
+                        title="Mark this message resolved?"
+                        description="This moves the completed message to Message history."
+                        confirmVariant="default"
+                      />
+                    )}
                     <Button variant="outline" nativeButton={false} render={<a href={`/admin/contact?tab=${history ? "history" : "messages"}&view=${message.id}`} />}>View</Button>
                     <Button variant="outline" nativeButton={false} render={<a href={`/admin/contact?tab=${history ? "history" : "messages"}&reply=${message.id}`} />}>Response</Button>
                     <DeleteButton
@@ -92,7 +127,7 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
               <DialogTitle className="mb-4">{viewedMessage.subject}</DialogTitle>
               <p className="text-sm text-muted-foreground">{viewedMessage.name} · {viewedMessage.email}</p>
               <p className="mt-4 whitespace-pre-line leading-7">{viewedMessage.body}</p>
-              <a href="/admin/contact?tab=history" className="mt-6 inline-flex h-9 items-center rounded-lg border px-3">Close</a>
+              <a href={backHref} className="mt-6 inline-flex h-9 items-center rounded-lg border px-3">Close</a>
             </DialogPopup>
           </DialogPortal>
         </Dialog>
@@ -101,12 +136,12 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
         <MessageChat
           messageId={openMessage.id}
           title={`Reply to ${openMessage.name}`}
-          opener={{ name: openMessage.name, body: openMessage.body }}
+          opener={{ name: openMessage.name, body: openMessage.body, createdAt: openMessage.createdAt.toISOString() }}
           viewer="admin"
-          closeHref="/admin/contact?tab=history"
+          closeHref={backHref}
           turns={replies
             .filter((item) => item.messageId === openMessage.id)
-            .map((item) => ({ id: item.id, authorRole: item.authorRole, body: item.body, createdAt: item.createdAt.toISOString() }))}
+            .map((item) => ({ id: item.id, authorRole: item.authorRole, body: item.body, imageUrl: item.imageKey ? publicObjectUrl("images", item.imageKey) : null, createdAt: item.createdAt.toISOString() }))}
         />
       ) : null}
     </div>

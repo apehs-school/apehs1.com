@@ -1,4 +1,3 @@
-import { BackToTop } from "@/components/back-to-top";
 import { DevotionalTap } from "@/components/devotional-tap";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -18,7 +17,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
         reference={devotional?.reference ?? fallbackPopup.reference}
       />
       {children}
-      <BackToTop />
       <SiteFooter />
     </>
   );

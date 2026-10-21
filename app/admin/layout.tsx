@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin-nav";
+import { MessageBell } from "@/components/message-bell";
 import { SetupNotice } from "@/components/setup-notice";
 import { Button } from "@/components/ui/button";
 import { ensureCurrentUser, hasAdminAccess } from "@/lib/auth";
+import { listOfficeMessageAlerts } from "@/lib/queries";
 import { clerkEnabled, databaseEnabled } from "@/lib/env";
 import "./admin.css";
 
@@ -20,12 +22,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = await ensureCurrentUser();
   if (!user) redirect("/sign-in");
   if (!hasAdminAccess(user)) redirect("/account?error=admin");
+  const alerts = await listOfficeMessageAlerts();
 
   return (
     <div className="admin-shell">
-      <AdminNav />
+      <AdminNav contactAlerts={alerts.filter((item) => item.unread).length} />
       <main className="admin-main">
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex items-center justify-end gap-2">
+          <MessageBell alerts={alerts} emptyHref="/admin/contact" />
           <Button nativeButton={false} variant="outline" render={<a href="/" />}>
             Home
           </Button>

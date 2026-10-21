@@ -1,7 +1,9 @@
 "use client";
 
+import { officeAlertCount } from "@/actions/contact";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const links = [
   { href: "/admin/news", label: "News", detail: "Homepage stories and the word for today" },
@@ -15,8 +17,35 @@ const links = [
   { href: "/admin/files", label: "Files", detail: "Images, documents, and other stored files" },
 ];
 
-export function AdminNav() {
+export function AdminNav({ contactAlerts = 0 }: { contactAlerts?: number }) {
   const pathname = usePathname();
+  const [alerts, setAlerts] = useState(contactAlerts);
+
+  useEffect(() => {
+    setAlerts(contactAlerts);
+  }, [contactAlerts]);
+
+  useEffect(() => {
+    let stopped = false;
+    let pending = false;
+    async function pull() {
+      if (pending || document.hidden) return;
+      pending = true;
+      try {
+        const count = await officeAlertCount();
+        if (!stopped) setAlerts(count);
+      } catch {
+        // A refresh can drop this request while the page is still open.
+      } finally {
+        pending = false;
+      }
+    }
+    const timer = window.setInterval(() => void pull(), 5000);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   return (
     <aside className="admin-side">
@@ -26,8 +55,13 @@ export function AdminNav() {
           const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
           return (
             <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined}>
-              <span>{link.label}</span>
-              <small>{link.detail}</small>
+              <span>
+                {link.label}
+                {link.href === "/admin/contact" && alerts > 0 ? (
+                  <em className="admin-alert" aria-label={`${alerts} new ${alerts === 1 ? "message" : "messages"}`}>{alerts}</em>
+                ) : null}
+              </span>
+              <small>{link.href === "/admin/contact" && alerts > 0 ? `${alerts} new ${alerts === 1 ? "message" : "messages"}` : link.detail}</small>
             </Link>
           );
         })}

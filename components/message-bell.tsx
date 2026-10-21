@@ -8,41 +8,40 @@ export type MessageAlert = {
   subject: string;
   preview: string;
   unread: boolean;
+  href: string;
 };
 
-export function MessageBell({ alerts }: { alerts: MessageAlert[] }) {
+export function MessageBell({ alerts, emptyHref }: { alerts: MessageAlert[]; emptyHref: string }) {
   const [open, setOpen] = useState(false);
-  if (alerts.length === 0) return null;
   const unread = alerts.filter((alert) => alert.unread).length;
 
   return (
-    <div className="relative">
+    <div className="message-bell">
       <button
         type="button"
-        className="relative inline-flex items-center px-3 py-3 text-[#0b1f3a]"
         aria-label={unread > 0 ? `${unread} new messages` : "Messages"}
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
       >
-        <Bell className="size-5" />
-        {unread > 0 ? (
-          <span className="absolute top-2 right-1 flex size-4 items-center justify-center rounded-full bg-[#c62828] text-[10px] font-semibold text-white">
-            {unread}
-          </span>
-        ) : null}
+        <Bell size={18} aria-hidden="true" />
+        <span>Messages</span>
+        {unread > 0 ? <em>{unread}</em> : null}
       </button>
       {open ? (
-        <div className="absolute top-full right-0 z-40 w-80 rounded-xl border bg-white p-2 text-left shadow-xl">
-          {alerts.map((alert) => (
-            <a
-              key={alert.id}
-              href={`/contact?chat=${alert.id}`}
-              className={`block rounded-lg px-3 py-2 hover:bg-[#f4f6f8] ${alert.unread ? "font-semibold" : ""}`}
-            >
-              <span className="block text-sm text-[#0b1f3a]">{alert.subject}</span>
-              <span className="mt-1 block text-sm font-normal text-[#52627a]">{alert.preview}</span>
-            </a>
-          ))}
+        <div className="message-bell-list">
+          {alerts.length === 0 ? (
+            <p>
+              No new messages.
+              <a href={emptyHref}>Open messages</a>
+            </p>
+          ) : (
+            alerts.map((alert) => (
+              <a key={`${alert.href}-${alert.id}`} href={alert.href} className={alert.unread ? "is-unread" : ""}>
+                <span>{alert.subject}</span>
+                <small>{alert.preview}</small>
+              </a>
+            ))
+          )}
         </div>
       ) : null}
     </div>

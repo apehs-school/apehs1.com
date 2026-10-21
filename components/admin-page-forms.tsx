@@ -10,18 +10,20 @@ export function PageEditors({
   pages,
   active,
   basePath,
+  omit,
 }: {
   pages: SitePageDefault[];
   active?: string;
   basePath?: string;
+  omit?: string[];
 }) {
   const selected = basePath ? (pages.find((page) => page.slug === active) ?? pages[0]) : undefined;
-  const visible = selected ? [selected] : pages;
+  const visible = (selected ? [selected] : pages).filter((page) => !omit?.includes(page.slug));
 
   return (
     <>
       {selected ? (
-        <div className="flex flex-wrap gap-2 border-b border-[#d9e0ea]">
+        <div className="flex flex-nowrap gap-2 overflow-x-auto border-b border-[#d9e0ea]">
           {pages.map((page) => {
             const current = page.slug === selected.slug;
             return (
@@ -29,7 +31,7 @@ export function PageEditors({
                 key={page.slug}
                 href={`${basePath}?tab=${page.slug}`}
                 aria-current={current ? "page" : undefined}
-                className={`border-b-2 px-3 py-2 text-sm font-medium ${
+                className={`shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-sm font-medium ${
                   current ? "border-[#0d47a1] text-[#0d47a1]" : "border-transparent text-[#24344d]"
                 }`}
               >
@@ -39,9 +41,6 @@ export function PageEditors({
           })}
         </div>
       ) : null}
-      <p className="text-sm text-muted-foreground">
-        Leave a blank line between paragraphs. Start a line with <code>- </code> for a bullet, or <code>## </code> for a heading.
-      </p>
       {visible.map((page) => (
         <Card key={page.slug}>
           <CardHeader>

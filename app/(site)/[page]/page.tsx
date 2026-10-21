@@ -1,13 +1,17 @@
 import { notFound } from "next/navigation";
 import { AboutView } from "@/components/about-view";
+import { AdmissionsView } from "@/components/admissions-view";
+import { AwardsView } from "@/components/awards-view";
+import { ScholarshipView } from "@/components/scholarship-view";
+import { ProgrammeBoard } from "@/components/programme-board";
+import { ActivityBoard } from "@/components/activity-card";
 import { PageBody } from "@/components/page-body";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ContactSection } from "@/components/contact-section";
 import { pageDefault, pagesInGroup } from "@/lib/site-content";
 import { formatLongDate } from "@/lib/format";
 import { publicObjectUrl } from "@/lib/storage";
-import { getSitePage, listActivities, listPublishedPageEntries, listPublishedStaff } from "@/lib/queries";
+import { getAwardPage, getSitePage, listActivities, listAdmissionRecords, listPublishedActivityPages, listPublishedPageEntries, listPublishedStaff, listScholarshipRecords } from "@/lib/queries";
 
 export const dynamic = "force-dynamic";
 
@@ -22,9 +26,14 @@ export default async function ManagedPage({
   const { chat, sent } = await searchParams;
   const content = await getSitePage(page);
   const entries = await listPublishedPageEntries(page);
+  const activityPages = page === "extra" ? await listPublishedActivityPages() : [];
   const staff = page === "staff" || page === "principal" ? await listPublishedStaff() : [];
-  if (!content && entries.length === 0 && staff.length === 0) notFound();
-  const title = content?.title ?? pageDefault(page)?.title ?? "Page";
+  const awards = page === "awards" ? await getAwardPage() : null;
+  const admissions = page === "admissions" ? await listAdmissionRecords() : null;
+  const scholarships = page === "scholarship" ? await listScholarshipRecords() : null;
+  if (!content && entries.length === 0 && activityPages.length === 0 && staff.length === 0 && page !== "extra" && page !== "admissions" && page !== "scholarship") notFound();
+  const title = content?.title ?? (page === "extra" ? "" : pageDefault(page)?.title ?? "Page");
+  const publishedStories = activityPages.filter((item) => item.slug !== page);
   const aboutPage = pagesInGroup("about").some((item) => item.slug === page);
   const principal = staff.find((member) => member.role === "Principal" || member.title === "Principal");
 
@@ -44,14 +53,18 @@ export default async function ManagedPage({
   }
 
   return (
-    <main className="mx-auto max-w-5xl space-y-6 px-4 py-10">
-      <h1 className="text-3xl font-semibold text-primary">{title}</h1>
-      {content && page !== "contact" ? (
+    <main className={`mx-auto max-w-5xl space-y-6 px-4 py-10${page === "contact" ? " contact-page" : ""}`}>
+      {title && page !== "awards" && page !== "admissions" && page !== "scholarship" ? <h1 className="text-3xl font-semibold text-primary">{title}</h1> : null}
+      {awards ? <AwardsView document={awards} /> : null}
+      {admissions?.migrated ? <AdmissionsView records={admissions.records} pageTitle={title} /> : null}
+      {scholarships ? <ScholarshipView records={scholarships} /> : null}
+      {content && page !== "contact" && page !== "academics" && page !== "awards" && page !== "scholarship" && !(page === "admissions" && admissions?.migrated) ? (
         <div className="space-y-4 leading-7">
           <PageBody body={content.body} />
         </div>
       ) : null}
-      {entries.map((entry) => {
+      {page === "academics" && entries.length > 0 ? <ProgrammeBoard entries={entries} /> : null}
+      {page === "academics" || page === "awards" || page === "admissions" || page === "scholarship" ? null : entries.map((entry) => {
         const imageUrl = entry.imageKey ? publicObjectUrl("images", entry.imageKey) : null;
         return (
           <section key={entry.id} className="space-y-4 leading-7">
@@ -61,6 +74,16 @@ export default async function ManagedPage({
           </section>
         );
       })}
+      {publishedStories.map((item, index) => (
+        <section key={item.slug} className="space-y-4 leading-7">
+          {title || index > 0 ? (
+            <h2 className="text-2xl font-semibold text-primary">{item.title}</h2>
+          ) : (
+            <h1 className="text-3xl font-semibold text-primary">{item.title}</h1>
+          )}
+          <PageBody body={item.body} />
+        </section>
+      ))}
       {page === "admissions" ? <AdmissionForms /> : null}
       {page === "extra" ? <ActivityCards /> : null}
       {page === "contact" ? <ContactSection chatId={chat} sent={sent === "1"} /> : null}
@@ -82,32 +105,19 @@ function AdmissionForms() {
 async function ActivityCards() {
   const items = await listActivities();
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {items.map((item) => (
-        <Card key={item.id}>
-          <CardHeader>
-            <CardTitle>{item.name}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {"startsOn" in item && item.startsOn && "endsOn" in item && item.endsOn ? (
-              <p>
-                <strong>Dates: </strong>
-                {formatLongDate(String(item.startsOn))} – {formatLongDate(String(item.endsOn))}
-              </p>
-            ) : null}
-            <p className="whitespace-pre-line">
-              <strong>Schedule: </strong>
-              {item.schedule}
-            </p>
-            {item.venue ? <p><strong>Venue: </strong>{item.venue}</p> : null}
-            {item.lead ? <p><strong>Staff: </strong>{item.lead}</p> : null}
-            {item.cost ? <p><strong>Cost: </strong>{item.cost}</p> : null}
-            {item.attire ? <p><strong>Attire: </strong>{item.attire}</p> : null}
-            {item.note ? <p className="text-sm text-muted-foreground">{item.note}</p> : null}
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <ActivityBoard
+      items={items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        period: "startsOn" in item && item.startsOn && "endsOn" in item && item.endsOn ? `${formatLongDate(String(item.startsOn))} – ${formatLongDate(String(item.endsOn))}` : "",
+        schedule: item.schedule,
+        venue: item.venue,
+        lead: item.lead,
+        cost: item.cost,
+        attire: item.attire,
+        note: item.note ?? "",
+      }))}
+    />
   );
 }
 

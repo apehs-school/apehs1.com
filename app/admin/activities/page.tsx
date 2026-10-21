@@ -38,15 +38,11 @@ export default async function ActivitiesPageAdmin() {
 
   return (
     <>
-      <h1>Activities page</h1>
-      <p className="text-sm text-muted-foreground">
-        Leave a blank line between paragraphs. Start a line with <code>- </code> for a bullet, or <code>## </code> for a heading.
-      </p>
-      <RecordDialog trigger="Add page" title="Add a page" action={createActivityPage}>
-        <AdminField label="Page title">
+      <RecordDialog trigger="Add heading" title="Add a heading" action={createActivityPage}>
+        <AdminField label="Title">
           <Input name="title" className={fieldClass} required />
         </AdminField>
-        <AdminField label="Page text">
+        <AdminField label="Description">
           <Textarea name="body" className="text-base" rows={14} required />
         </AdminField>
       </RecordDialog>
@@ -54,7 +50,7 @@ export default async function ActivitiesPageAdmin() {
         <TableHeader>
           <TableRow>
             <TableHead className="w-[18%]">Title</TableHead>
-            <TableHead>Page text</TableHead>
+            <TableHead>Description</TableHead>
             <TableHead className="w-28">Status</TableHead>
             <TableHead className="w-72" />
           </TableRow>
@@ -71,12 +67,12 @@ export default async function ActivitiesPageAdmin() {
               <TableCell>{page.published ? "Published" : "Draft"}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap justify-end gap-2">
-                  <RecordDialog trigger="Edit" title="Edit page" action={savePage}>
+                  <RecordDialog trigger="Edit" title="Edit heading" action={savePage}>
                     <input type="hidden" name="slug" value={page.slug} />
-                    <AdminField label="Page title">
+                    <AdminField label="Title">
                       <Input name="title" className={fieldClass} defaultValue={page.title} required />
                     </AdminField>
-                    <AdminField label="Page text">
+                    <AdminField label="Description">
                       <Textarea name="body" className="text-base" defaultValue={page.body} rows={14} required />
                     </AdminField>
                   </RecordDialog>

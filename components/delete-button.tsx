@@ -19,6 +19,7 @@ export function DeleteButton({
   label = "Delete",
   title = "Delete this record?",
   description = "This cannot be undone.",
+  confirmVariant = "destructive",
   fields,
 }: {
   action: (formData: FormData) => void | Promise<void>;
@@ -27,6 +28,7 @@ export function DeleteButton({
   label?: string;
   title?: string;
   description?: string;
+  confirmVariant?: "default" | "destructive";
   fields?: Record<string, string>;
 }) {
   return (
@@ -41,7 +43,7 @@ export function DeleteButton({
             <form action={action}>
               <input type="hidden" name={name} value={id} />
               {fields ? Object.entries(fields).map(([key, value]) => <input key={key} type="hidden" name={key} value={value} />) : null}
-              <Button type="submit" variant="destructive">{label}</Button>
+              <Button type="submit" variant={confirmVariant}>{label}</Button>
             </form>
             <AlertDialogClose render={<Button variant="outline" type="button" />}>Cancel</AlertDialogClose>
           </div>

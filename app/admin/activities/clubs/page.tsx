@@ -1,4 +1,5 @@
 import { createActivity, deleteActivity, setActivityPublished, updateActivity } from "@/actions/admin";
+import { ActivityDates } from "@/components/activity-dates";
 import { DeleteButton } from "@/components/delete-button";
 import { AdminField } from "@/components/admin-field";
 import { RecordDialog } from "@/components/record-dialog";
@@ -8,12 +9,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { getDb } from "@/db";
 import { activities } from "@/db/schema";
-import { formatLongDate } from "@/lib/format";
+import { formatShortDate, jamaicaDate, shortSchedule } from "@/lib/format";
+import { retireEndedActivities } from "@/lib/queries";
 
 const fieldClass = "h-11 text-base";
 
 export default async function ActivityClubsPage() {
+  await retireEndedActivities();
   const db = getDb();
+  const today = jamaicaDate();
   const rows = db ? await db.select().from(activities) : [];
 
   return (
@@ -23,15 +27,7 @@ export default async function ActivityClubsPage() {
         <AdminField label="Activity name">
           <Input name="name" className={fieldClass} required />
         </AdminField>
-        <AdminField label="Start date">
-          <Input name="startsOn" type="date" className={fieldClass} required />
-        </AdminField>
-        <AdminField label="End date">
-          <Input name="endsOn" type="date" className={fieldClass} required />
-        </AdminField>
-        <AdminField label="Days and times">
-          <Textarea name="schedule" rows={4} className="text-base" required />
-        </AdminField>
+        <ActivityDates />
         <AdminField label="Venue">
           <Input name="venue" className={fieldClass} />
         </AdminField>
@@ -59,17 +55,20 @@ export default async function ActivityClubsPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {rows.map((item) => (
-            <TableRow key={item.id}>
+          {rows.map((item) => {
+            const ended = item.endsOn < today;
+            const tone = ended ? "bg-[#fde8e8] hover:bg-[#fde8e8]" : item.published ? "bg-[#e7f6ee] hover:bg-[#e7f6ee]" : "bg-[#fff1e0] hover:bg-[#fff1e0]";
+            return (
+            <TableRow key={item.id} className={tone}>
               <TableCell>
                 <strong>{item.name}</strong>
                 <div className="text-sm text-muted-foreground">{[item.venue, item.lead, item.cost].filter(Boolean).join(" · ")}</div>
               </TableCell>
-              <TableCell>
-                {formatLongDate(item.startsOn)} – {formatLongDate(item.endsOn)}
+              <TableCell className="whitespace-nowrap">
+                {formatShortDate(item.startsOn)} – {formatShortDate(item.endsOn)}
               </TableCell>
-              <TableCell className="whitespace-pre-line">{item.schedule}</TableCell>
-              <TableCell>{item.published ? "Published" : "Draft"}</TableCell>
+              <TableCell className="max-w-xs">{shortSchedule(item.schedule)}</TableCell>
+              <TableCell>{ended ? "Ended" : item.published ? "Published" : "Draft"}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap justify-end gap-2">
                   <RecordDialog trigger="Edit" title="Edit an activity" action={updateActivity}>
@@ -77,15 +76,7 @@ export default async function ActivityClubsPage() {
                     <AdminField label="Activity name">
                       <Input name="name" className={fieldClass} defaultValue={item.name} required />
                     </AdminField>
-                    <AdminField label="Start date">
-                      <Input name="startsOn" type="date" className={fieldClass} defaultValue={item.startsOn} required />
-                    </AdminField>
-                    <AdminField label="End date">
-                      <Input name="endsOn" type="date" className={fieldClass} defaultValue={item.endsOn} required />
-                    </AdminField>
-                    <AdminField label="Days and times">
-                      <Textarea name="schedule" rows={4} className="text-base" defaultValue={item.schedule} required />
-                    </AdminField>
+                    <ActivityDates startsOn={item.startsOn} endsOn={item.endsOn} schedule={item.schedule} />
                     <AdminField label="Venue">
                       <Input name="venue" className={fieldClass} defaultValue={item.venue} />
                     </AdminField>
@@ -111,7 +102,8 @@ export default async function ActivityClubsPage() {
                 </div>
               </TableCell>
             </TableRow>
-          ))}
+            );
+          })}
         </TableBody>
       </Table>
     </>

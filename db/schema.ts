@@ -110,6 +110,53 @@ export const events = pgTable("events", {
   published: boolean("published").notNull().default(true),
 });
 
+export const admissionRecords = pgTable("admission_records", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  department: text("department").notNull(),
+  introduction: text("introduction").notNull(),
+  minAge: integer("min_age"),
+  maxAge: integer("max_age"),
+  gradeRange: text("grade_range").notNull().default(""),
+  eligibilityNote: text("eligibility_note").notNull().default(""),
+  documents: text("documents").notNull().default("[]"),
+  steps: text("steps").notNull().default("[]"),
+  additional: text("additional").notNull().default(""),
+  published: boolean("published").notNull().default(false),
+  publishedSnapshot: text("published_snapshot"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const admissionMeta = pgTable("admission_meta", {
+  id: text("id").primaryKey(),
+  migratedAt: timestamp("migrated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const scholarshipRecords = pgTable("scholarship_records", {
+  id: text("id").primaryKey(),
+  studentName: text("student_name").notNull(),
+  awardName: text("award_name").notNull(),
+  year: integer("year").notNull(),
+  grade: text("grade").notNull().default(""),
+  department: text("department").notNull(),
+  organization: text("organization").notNull().default(""),
+  details: text("details").notNull().default(""),
+  published: boolean("published").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const awardPages = pgTable("award_pages", {
+  slug: text("slug").primaryKey(),
+  title: text("title").notNull(),
+  introduction: text("introduction").notNull().default(""),
+  pepResults: text("pep_results").notNull().default("[]"),
+  assessments: text("assessments").notNull().default("[]"),
+  awards: text("awards").notNull().default("[]"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const sitePages = pgTable("site_pages", {
   slug: text("slug").primaryKey(),
   title: text("title").notNull(),
@@ -185,6 +232,10 @@ export const storedFiles = pgTable("stored_files", {
 export const contactDetails = pgTable("contact_details", {
   id: text("id").primaryKey(),
   address: text("address").notNull().default(""),
+  street: text("street").notNull().default(""),
+  apt: text("apt").notNull().default(""),
+  town: text("town").notNull().default(""),
+  parish: text("parish").notNull().default(""),
   telephone: text("telephone").notNull().default(""),
   whatsapp: text("whatsapp").notNull().default(""),
   email: text("email").notNull().default(""),
@@ -200,7 +251,11 @@ export const contactMessages = pgTable("contact_messages", {
   subject: text("subject").notNull(),
   body: text("body").notNull(),
   openedAt: timestamp("opened_at", { withTimezone: true }),
+  openedBy: text("opened_by").notNull().default(""),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  resolvedBy: text("resolved_by").notNull().default(""),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  deletedBy: text("deleted_by").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -211,6 +266,7 @@ export const contactReplies = pgTable("contact_replies", {
     .references(() => contactMessages.id, { onDelete: "cascade" }),
   authorRole: text("author_role").notNull(),
   body: text("body").notNull(),
+  imageKey: text("image_key").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   readAt: timestamp("read_at", { withTimezone: true }),
 });

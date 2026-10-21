@@ -34,7 +34,7 @@ const linkClass =
   "border-b-2 border-transparent px-3 py-3 text-[13px] font-medium tracking-wide text-[#0b1f3a] uppercase hover:border-[#c9a227] hover:text-[#0d47a1]";
 const itemClass = "school-menu-item";
 
-export function SiteNav({ alerts = [], showAdmin = false }: { alerts?: MessageAlert[]; showAdmin?: boolean }) {
+export function SiteNav({ alerts = [], showAdmin = false, signedIn = false }: { alerts?: MessageAlert[]; showAdmin?: boolean; signedIn?: boolean }) {
   return (
     <nav className="border-t border-[#e6ebf2] bg-[#f4f6f8]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-2">
@@ -63,7 +63,7 @@ export function SiteNav({ alerts = [], showAdmin = false }: { alerts?: MessageAl
               Sign in
             </a>
           )}
-          <MessageBell alerts={alerts} />
+          {signedIn ? <MessageBell alerts={alerts} emptyHref="/contact" /> : null}
           {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? <AuthLinks part="avatar" showAdmin={showAdmin} /> : null}
         </div>
         <a
