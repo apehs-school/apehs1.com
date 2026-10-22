@@ -13,10 +13,17 @@ import { activityDefaults, pageDefault, sitePageDefaults } from "@/lib/site-cont
 async function read<T>(query: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await query();
-  } catch (error) {
-    const code = (error as { cause?: { code?: string } }).cause?.code;
-    console.error(code ? `Database read failed (${code})` : "Database read failed");
-    return fallback;
+  } catch {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    try {
+      return await query();
+    } catch (error) {
+      const coded = error as { code?: string; cause?: { code?: string } };
+      const code = coded.code || coded.cause?.code;
+      const detail = error instanceof Error ? error.message.replace(/postgres(?:ql)?:\/\/\S+/gi, "[redacted]") : "";
+      console.error(code ? `Database read failed (${code})` : "Database read failed", detail);
+      return fallback;
+    }
   }
 }
 
