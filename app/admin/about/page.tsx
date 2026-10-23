@@ -6,7 +6,8 @@ import { RecordParagraphs } from "@/components/record-paragraphs";
 import { StaffDialog, type StaffDraft } from "@/components/staff-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/db";
 import { pageEntries, sitePages, staffMembers } from "@/db/schema";
 import { sitePageDefaults } from "@/lib/site-content";
@@ -63,18 +64,21 @@ function StaffTable({ rows }: { rows: { id: string; name: string; role: string; 
   return (
     <>
       <StaffDialog />
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-20">Photo</TableHead>
-            <TableHead className="w-[22%]">Staff</TableHead>
-            <TableHead>Grade and subject</TableHead>
-            <TableHead className="w-28">Status</TableHead>
-            <TableHead className="w-80" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.length === 0 ? (
+      <PagedTable
+        pageKey="staff"
+        tableClassName="table-fixed"
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-20">Photo</TableHead>
+              <TableHead className="w-[22%]">Staff</TableHead>
+              <TableHead>Grade and subject</TableHead>
+              <TableHead className="w-28">Status</TableHead>
+              <TableHead className="w-80" />
+            </TableRow>
+          </TableHeader>
+        }
+        rows={rows.length === 0 ? (
             <TableRow>
               <TableCell colSpan={5}>No staff records yet.</TableCell>
             </TableRow>
@@ -117,8 +121,7 @@ function StaffTable({ rows }: { rows: { id: string; name: string; role: string; 
               </TableRow>
             );
           })}
-        </TableBody>
-      </Table>
+      />
     </>
   );
 }
@@ -153,17 +156,21 @@ function PageRecordTable({
           </AdminField>
         ) : null}
       </RecordDialog>
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow>
-            {withImage ? <TableHead className="w-20">Image</TableHead> : null}
-            <TableHead className="w-[18%]">{titleLabel}</TableHead>
-            <TableHead>{bodyLabel}</TableHead>
-            <TableHead className="w-28">Status</TableHead>
-            <TableHead className="w-80" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+      <PagedTable
+        pageKey="records"
+        tableClassName="table-fixed"
+        header={
+          <TableHeader>
+            <TableRow>
+              {withImage ? <TableHead className="w-20">Image</TableHead> : null}
+              <TableHead className="w-[18%]">{titleLabel}</TableHead>
+              <TableHead>{bodyLabel}</TableHead>
+              <TableHead className="w-28">Status</TableHead>
+              <TableHead className="w-80" />
+            </TableRow>
+          </TableHeader>
+        }
+        rows={<>
           {!builtin && entries.length === 0 ? (
             <TableRow>
               <TableCell colSpan={withImage ? 5 : 4}>No records on this tab yet.</TableCell>
@@ -239,8 +246,8 @@ function PageRecordTable({
               </TableCell>
             </TableRow>
           ))}
-        </TableBody>
-      </Table>
+        </>}
+      />
     </>
   );
 }

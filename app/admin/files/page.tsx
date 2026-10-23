@@ -3,7 +3,8 @@ import { DeleteButton } from "@/components/delete-button";
 import { AdminField, adminSelectClass } from "@/components/admin-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { storageEnabled } from "@/lib/env";
 import { fileHref } from "@/lib/storage";
 import { listStoredFiles } from "@/lib/queries";
@@ -36,32 +37,33 @@ export default async function FilesAdminPage() {
           </form>
         </CardContent>
       </Card>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Kind</TableHead>
-            <TableHead>Size</TableHead>
-            <TableHead />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {files.map((file) => (
-            <TableRow key={file.id}>
-              <TableCell>
-                <a className="text-primary underline" href={fileHref(file)}>
-                  {file.filename}
-                </a>
-              </TableCell>
-              <TableCell>{file.bucket}</TableCell>
-              <TableCell>{Math.ceil(file.sizeBytes / 1024)} KB</TableCell>
-              <TableCell>
-                <DeleteButton action={deleteStoredFile} id={file.id} label="Remove" title="Delete this file?" description="This removes the file from storage." />
-              </TableCell>
+      <PagedTable
+        pageKey="files"
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Kind</TableHead>
+              <TableHead>Size</TableHead>
+              <TableHead />
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+        }
+        rows={files.map((file) => (
+          <TableRow key={file.id}>
+            <TableCell>
+              <a className="text-primary underline" href={fileHref(file)}>
+                {file.filename}
+              </a>
+            </TableCell>
+            <TableCell>{file.bucket}</TableCell>
+            <TableCell>{Math.ceil(file.sizeBytes / 1024)} KB</TableCell>
+            <TableCell>
+              <DeleteButton action={deleteStoredFile} id={file.id} label="Remove" title="Delete this file?" description="This removes the file from storage." />
+            </TableCell>
+          </TableRow>
+        ))}
+      />
     </div>
   );
 }

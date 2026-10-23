@@ -3,7 +3,8 @@ import { DeleteButton } from "@/components/delete-button";
 import { AdminField } from "@/components/admin-field";
 import { RecordDialog } from "@/components/record-dialog";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getDb } from "@/db";
@@ -46,17 +47,20 @@ export default async function ActivitiesPageAdmin() {
           <Textarea name="body" className="text-base" rows={14} required />
         </AdminField>
       </RecordDialog>
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[18%]">Title</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead className="w-28">Status</TableHead>
-            <TableHead className="w-72" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((page) => (
+      <PagedTable
+        pageKey="headings"
+        tableClassName="table-fixed"
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[18%]">Title</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead className="w-28">Status</TableHead>
+              <TableHead className="w-72" />
+            </TableRow>
+          </TableHeader>
+        }
+        rows={rows.map((page) => (
             <TableRow key={page.slug}>
               <TableCell className="whitespace-normal">
                 <strong>{page.title}</strong>
@@ -86,8 +90,7 @@ export default async function ActivitiesPageAdmin() {
               </TableCell>
             </TableRow>
           ))}
-        </TableBody>
-      </Table>
+      />
     </>
   );
 }

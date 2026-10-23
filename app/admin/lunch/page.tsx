@@ -2,7 +2,8 @@ import { deleteMenuItem, setMenuCategoryPublished, setMenuItemPublished } from "
 import { DeleteButton } from "@/components/delete-button";
 import { MealDialog } from "@/components/meal-dialog";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/db";
 import { menuCategories, menuItems } from "@/db/schema";
 import { formatJmd, formatLongDate } from "@/lib/format";
@@ -52,24 +53,26 @@ export default async function LunchAdminPage({ searchParams }: { searchParams: P
           </Button>
         </form>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Period</TableHead>
-            <TableHead>Meal</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {visible.length === 0 ? (
+      <PagedTable
+        pageKey="meals"
+        header={
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={5}>No meals in {active} yet.</TableCell>
+              <TableHead>Period</TableHead>
+              <TableHead>Meal</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead />
             </TableRow>
-          ) : (
-            visible.map((item) => (
-              <TableRow key={item.id}>
+          </TableHeader>
+        }
+        rows={visible.length === 0 ? (
+          <TableRow>
+            <TableCell colSpan={5}>No meals in {active} yet.</TableCell>
+          </TableRow>
+        ) : (
+          visible.map((item) => (
+            <TableRow key={item.id}>
                 <TableCell>
                   {formatLongDate(item.startsOn)} – {formatLongDate(item.endsOn)}
                 </TableCell>
@@ -113,9 +116,8 @@ export default async function LunchAdminPage({ searchParams }: { searchParams: P
                 </TableCell>
               </TableRow>
             ))
-          )}
-        </TableBody>
-      </Table>
+        )}
+      />
     </div>
   );
 }

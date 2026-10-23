@@ -7,7 +7,8 @@ import { adminSelectClass } from "@/components/admin-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogBackdrop, DialogClose, DialogPopup, DialogPortal, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogBackdrop, AlertDialogClose, AlertDialogDescription, AlertDialogPopup, AlertDialogPortal, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { admissionDepartments, departmentLabel, validateScholarship, type AdmissionDepartment, type ScholarshipRecord } from "@/lib/scholarships";
@@ -148,17 +149,19 @@ export function ScholarshipEditor({ initial }: { initial: ScholarshipRecord[] })
           </div>
         </div>
         <div className="admission-table">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Student / scholarship</TableHead>
-                <TableHead>Year / department</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {records.length === 0 ? (
+          <PagedTable
+            pageKey="scholarships"
+            header={
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Student / scholarship</TableHead>
+                  <TableHead>Year / department</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+            }
+            rows={records.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4}>No scholarships saved yet.</TableCell>
                 </TableRow>
@@ -188,8 +191,7 @@ export function ScholarshipEditor({ initial }: { initial: ScholarshipRecord[] })
                   </TableCell>
                 </TableRow>
               ))}
-            </TableBody>
-          </Table>
+          />
         </div>
       </section>
 

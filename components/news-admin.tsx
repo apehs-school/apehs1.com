@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { createNews, deleteNews, setNewsPublished, updateNews } from "@/actions/admin";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { createNews, deleteNews, setNewsOnCalendar, setNewsPublished, updateNews } from "@/actions/admin";
 import { DeleteButton } from "@/components/delete-button";
 import { bulletinAudiences, bulletinCategories, bulletinDate, type BulletinItem } from "@/components/news-bulletin";
+import { TablePager, useTablePage } from "@/components/paged-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,6 +16,7 @@ type BulletinRow = Omit<BulletinItem, "images"> & {
   showFrom: string;
   pinned: boolean;
   published: boolean;
+  onCalendar: boolean;
   images: BulletinImage[];
 };
 
@@ -30,6 +32,7 @@ const empty: BulletinRow = {
   endsOn: "",
   pinned: false,
   published: false,
+  onCalendar: false,
   images: [],
 };
 
@@ -179,45 +182,68 @@ export function NewsAdmin({ rows }: { rows: BulletinRow[] }) {
           <h2 id="manage-bulletins">Manage bulletins</h2>
           <p>Sample content · Preview date: {bulletinDate(today)}</p>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Bulletin</th>
-              <th>Display period</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={4}>No bulletins yet.</td>
-              </tr>
-            ) : rows.map((item) => (
-              <tr key={item.id}>
-                <td>
-                  <strong>{item.title}</strong>
-                  <span>{item.category} · {item.audience}</span>
-                </td>
-                <td>
-                  {bulletinDate(item.eventDate)}
-                  <span>to {item.endsOn ? bulletinDate(item.endsOn) : "No end date"}</span>
-                </td>
-                <td><span className={item.published ? "is-published" : "is-draft"}>{item.published ? "Published" : "Draft"}</span></td>
-                <td>
-                  <button type="button" onClick={() => setEditing(item)}>Edit</button>
-                  <form action={setNewsPublished}>
-                    <input type="hidden" name="id" value={item.id} />
-                    <input type="hidden" name="published" value={item.published ? "false" : "true"} />
-                    <button type="submit">{item.published ? "Unpublish" : "Publish"}</button>
-                  </form>
-                  <DeleteButton action={deleteNews} id={item.id} label="Delete" />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Suspense fallback={<BulletinSheet rows={rows.slice(0, 8)} onEdit={setEditing} />}>
+          <PagedBulletins rows={rows} onEdit={setEditing} />
+        </Suspense>
       </section>
     </div>
+  );
+}
+
+function PagedBulletins({ rows, onEdit }: { rows: BulletinRow[]; onEdit: (item: BulletinRow) => void }) {
+  const paging = useTablePage(rows.length, "bulletins");
+  return (
+    <>
+      <BulletinSheet rows={rows.slice(paging.start, paging.end)} onEdit={onEdit} />
+      <TablePager page={paging.page} pages={paging.pages} total={paging.total} from={paging.from} to={paging.to} onPage={paging.go} />
+    </>
+  );
+}
+
+function BulletinSheet({ rows, onEdit }: { rows: BulletinRow[]; onEdit: (item: BulletinRow) => void }) {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Bulletin</th>
+          <th>Display period</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.length === 0 ? (
+          <tr>
+            <td colSpan={4}>No bulletins yet.</td>
+          </tr>
+        ) : rows.map((item) => (
+          <tr key={item.id}>
+            <td>
+              <strong>{item.title}</strong>
+              <span>{item.category} · {item.audience}</span>
+            </td>
+            <td>
+              {bulletinDate(item.eventDate)}
+              <span>to {item.endsOn ? bulletinDate(item.endsOn) : "No end date"}</span>
+            </td>
+            <td><span className={item.published ? "is-published" : "is-draft"}>{item.published ? "Published" : "Draft"}</span></td>
+            <td>
+              <button type="button" onClick={() => onEdit(item)}>Edit</button>
+              <form action={setNewsPublished}>
+                <input type="hidden" name="id" value={item.id} />
+                <input type="hidden" name="published" value={item.published ? "false" : "true"} />
+                <button type="submit">{item.published ? "Unpublish" : "Publish"}</button>
+              </form>
+              <form action={setNewsOnCalendar}>
+                <input type="hidden" name="id" value={item.id} />
+                <input type="hidden" name="onCalendar" value={item.onCalendar ? "false" : "true"} />
+                <button type="submit">{item.onCalendar ? "Remove from calendar" : "Publish on calendar"}</button>
+              </form>
+              <DeleteButton action={deleteNews} id={item.id} label="Delete" />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }

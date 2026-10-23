@@ -35,25 +35,28 @@ const linkClass =
 const itemClass = "school-menu-item";
 
 export function SiteNav({ alerts = [], showAdmin = false, signedIn = false }: { alerts?: MessageAlert[]; showAdmin?: boolean; signedIn?: boolean }) {
+  const pathname = usePathname();
+  const open = (href: string) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`));
+
   return (
     <nav className="border-t border-[#e6ebf2] bg-[#f4f6f8]">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-2">
         <div className="flex flex-wrap items-center">
-          <a className={linkClass} href="/">
+          <a className={cn(linkClass, open("/") && "is-open")} href="/" aria-current={open("/") ? "page" : undefined}>
             Home
           </a>
           <Menu label="About us" href="/about" links={aboutLinks} />
           <Menu label="Academics" href="/academics" links={academicLinks} />
-          <a className={linkClass} href="/calendar">
+          <a className={cn(linkClass, open("/calendar") && "is-open")} href="/calendar" aria-current={open("/calendar") ? "page" : undefined}>
             Calendar
           </a>
-          <a className={linkClass} href="/extra">
+          <a className={cn(linkClass, open("/extra") && "is-open")} href="/extra" aria-current={open("/extra") ? "page" : undefined}>
             Activities
           </a>
-          <a className={linkClass} href="/menu">
+          <a className={cn(linkClass, open("/menu") && "is-open")} href="/menu" aria-current={open("/menu") ? "page" : undefined}>
             Lunch menu
           </a>
-          <a className={linkClass} href="/contact">
+          <a className={cn(linkClass, open("/contact") && "is-open")} href="/contact" aria-current={open("/contact") ? "page" : undefined}>
             Contact
           </a>
           {process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? (
@@ -82,7 +85,7 @@ function Menu({ label, href, links }: { label: string; href: string; links: stri
   const active = pathname === href || links.some(([path]) => pathname === path);
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className={cn(linkClass, active && "border-[#c9a227] text-[#0d47a1]")}>{label}</DropdownMenuTrigger>
+      <DropdownMenuTrigger className={cn(linkClass, active && "is-open")} aria-current={active ? "page" : undefined}>{label}</DropdownMenuTrigger>
       <DropdownMenuContent className="school-menu">
         <DropdownMenuItem className={itemClass} data-current={pathname === href ? "true" : undefined} nativeButton={false} render={<a href={href} />}>
           {label}

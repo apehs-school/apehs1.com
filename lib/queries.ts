@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gte, inArray, isNull, lt, lte } from "drizzle-orm";
 import { getDb } from "@/db";
 import { activities, admissionApplications, admissionMeta, admissionRecords, awardPages, behaviourAssessments, contactDetails, contactMessages, contactReplies, devotionals, events, fees, guardians, menuCategories, menuItems, news, pageEntries, payments, scholarshipRecords, sitePages, staffMembers, storedFiles, students, users } from "@/db/schema";
 import { eventsByDate, fallbackEvents } from "@/lib/fallback";
+import { calendarColor, type CalendarEntry } from "@/lib/calendar";
 import { jamaicaDate } from "@/lib/format";
 import { isMealCategory, mealCategories } from "@/lib/menu";
 import { legacyAdmission, legacyAdmissionId, snapshotOf, toAdmissionRecord, type AdmissionRecord } from "@/lib/admissions";
@@ -56,6 +57,56 @@ function eachDate(start: string, end: string) {
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
   return dates;
+}
+
+export async function listCalendarEntries(): Promise<CalendarEntry[]> {
+  const db = getDb();
+  if (!db) {
+    return fallbackEvents.map((item) => ({
+      id: item.date + item.title,
+      title: item.title,
+      details: "",
+      start: item.date,
+      end: item.date,
+      color: calendarColor(item.title),
+      kind: "Event" as const,
+    }));
+  }
+  const [eventRows, activityRows, newsRows] = await Promise.all([
+    read(() => db.select().from(events).where(eq(events.published, true)), []),
+    read(() => db.select().from(activities).where(eq(activities.onCalendar, true)), []),
+    read(() => db.select().from(news).where(eq(news.onCalendar, true)), []),
+  ]);
+  const entries: CalendarEntry[] = [
+    ...eventRows.map((item) => ({
+      id: item.id,
+      title: item.title,
+      details: item.details ?? "",
+      start: item.eventDate,
+      end: item.endsOn < item.eventDate ? item.eventDate : item.endsOn,
+      color: calendarColor(item.id),
+      kind: "Event" as const,
+    })),
+    ...activityRows.map((item) => ({
+      id: item.id,
+      title: item.name,
+      details: [item.venue && `Venue: ${item.venue}`, item.lead && `Lead: ${item.lead}`, item.schedule, item.note].filter(Boolean).join("\n"),
+      start: item.startsOn,
+      end: item.endsOn < item.startsOn ? item.startsOn : item.endsOn,
+      color: calendarColor(item.id),
+      kind: "Club" as const,
+    })),
+    ...newsRows.map((item) => ({
+      id: item.id,
+      title: item.title,
+      details: [item.body, item.details && item.details !== item.body ? item.details : ""].filter(Boolean).join("\n"),
+      start: item.eventDate,
+      end: item.endsOn && item.endsOn >= item.eventDate ? item.endsOn : item.eventDate,
+      color: calendarColor(item.id),
+      kind: "Bulletin" as const,
+    })),
+  ];
+  return entries.sort((a, b) => a.start.localeCompare(b.start) || a.title.localeCompare(b.title));
 }
 
 export async function getCalendarEvents() {

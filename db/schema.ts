@@ -104,6 +104,7 @@ export const news = pgTable("news", {
   pinned: boolean("pinned").notNull().default(false),
   images: text("images").notNull().default("[]"),
   published: boolean("published").notNull().default(true),
+  onCalendar: boolean("on_calendar").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -250,6 +251,7 @@ export const activities = pgTable("activities", {
   startsOn: date("starts_on").notNull(),
   endsOn: date("ends_on").notNull(),
   published: boolean("published").notNull().default(true),
+  onCalendar: boolean("on_calendar").notNull().default(false),
 });
 
 export const menuItems = pgTable("menu_items", {

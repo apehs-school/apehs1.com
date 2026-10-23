@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogBackdrop, DialogClose, DialogPopup, DialogPortal, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogBackdrop, AlertDialogClose, AlertDialogDescription, AlertDialogPopup, AlertDialogPortal, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { awardCategories, awardsAverage, isPublished, validateAwards, type AwardsDocument, type GradeAssessment, type PepResult, type RecognitionAward } from "@/lib/awards";
 
 const fieldClass = "h-11 text-base";
@@ -131,6 +132,7 @@ export function AwardsEditor({ initial }: { initial: AwardsDocument }) {
               <PepDialog trigger="Add year" onSave={(row) => commit({ ...draft, pepResults: [...draft.pepResults, row] })} />
             </div>
             <RecordTable
+              pageKey="pep"
               empty="No years yet."
               columns={["Year", "Result", "Status"]}
               rows={draft.pepResults.map((row) => ({
@@ -158,6 +160,7 @@ export function AwardsEditor({ initial }: { initial: AwardsDocument }) {
               <AssessmentDialog trigger="Add assessment" onSave={(row) => commit({ ...draft, assessments: [...draft.assessments, row] })} />
             </div>
             <RecordTable
+              pageKey="assessments"
               empty="No assessments yet."
               columns={["Grade", "Assessment", "Result", "Status"]}
               rows={draft.assessments.map((row) => ({
@@ -184,6 +187,7 @@ export function AwardsEditor({ initial }: { initial: AwardsDocument }) {
               <AwardDialog trigger="Add award" onSave={(row) => commit({ ...draft, awards: [...draft.awards, row] })} />
             </div>
             <RecordTable
+              pageKey="recognition"
               empty="No awards yet."
               columns={["Category", "Title", "Year", "Status"]}
               rows={draft.awards.map((row) => ({
@@ -231,32 +235,34 @@ function Field({ label, required = false, error = "", children }: { label: strin
   );
 }
 
-function RecordTable({ columns, rows, empty }: { columns: string[]; rows: { id: string; cells: string[]; actions: React.ReactNode }[]; empty: string }) {
+function RecordTable({ pageKey, columns, rows, empty }: { pageKey: string; columns: string[]; rows: { id: string; cells: string[]; actions: React.ReactNode }[]; empty: string }) {
   return (
-    <Table className="table-fixed">
-      <TableHeader>
-        <TableRow>
-          {columns.map((column) => <TableHead key={column}>{column}</TableHead>)}
-          <TableHead className="w-72" />
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.length === 0 ? (
+    <PagedTable
+      pageKey={pageKey}
+      tableClassName="table-fixed"
+      header={
+        <TableHeader>
           <TableRow>
-            <TableCell colSpan={columns.length + 1}>{empty}</TableCell>
+            {columns.map((column) => <TableHead key={column}>{column}</TableHead>)}
+            <TableHead className="w-72" />
           </TableRow>
-        ) : rows.map((row) => (
-          <TableRow key={row.id}>
-            {row.cells.map((cell, index) => (
-              <TableCell key={`${row.id}-${index}`} className="whitespace-normal">{index === 0 ? <strong>{cell}</strong> : cell}</TableCell>
-            ))}
-            <TableCell>
-              <div className="flex flex-wrap justify-end gap-2">{row.actions}</div>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+      }
+      rows={rows.length === 0 ? (
+        <TableRow>
+          <TableCell colSpan={columns.length + 1}>{empty}</TableCell>
+        </TableRow>
+      ) : rows.map((row) => (
+        <TableRow key={row.id}>
+          {row.cells.map((cell, index) => (
+            <TableCell key={`${row.id}-${index}`} className="whitespace-normal">{index === 0 ? <strong>{cell}</strong> : cell}</TableCell>
+          ))}
+          <TableCell>
+            <div className="flex flex-wrap justify-end gap-2">{row.actions}</div>
+          </TableCell>
+        </TableRow>
+      ))}
+    />
   );
 }
 

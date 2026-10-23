@@ -4,7 +4,8 @@ import { AdminField, adminSelectClass } from "@/components/admin-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { formatJmd, formatLongDate } from "@/lib/format";
 import { listFees, listStudents } from "@/lib/queries";
@@ -45,33 +46,34 @@ export default async function FeesPage() {
           </form>
         </CardContent>
       </Card>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Fee</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Student</TableHead>
-            <TableHead>Due</TableHead>
-            <TableHead />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {fees.map((fee) => (
-            <TableRow key={fee.id}>
-              <TableCell>
-                <strong>{fee.name}</strong>
-                {fee.description ? <div>{fee.description}</div> : null}
-              </TableCell>
-              <TableCell>{formatJmd(fee.amountCents)}</TableCell>
-              <TableCell>{fee.firstName ? `${fee.firstName} ${fee.lastName}` : "All students"}</TableCell>
-              <TableCell>{fee.dueDate ? formatLongDate(fee.dueDate) : "—"}</TableCell>
-              <TableCell>
-                <DeleteButton action={deleteFee} id={fee.id} label="Remove" title="Remove this fee?" />
-              </TableCell>
+      <PagedTable
+        pageKey="fees"
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead>Fee</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Student</TableHead>
+              <TableHead>Due</TableHead>
+              <TableHead />
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+        }
+        rows={fees.map((fee) => (
+          <TableRow key={fee.id}>
+            <TableCell>
+              <strong>{fee.name}</strong>
+              {fee.description ? <div>{fee.description}</div> : null}
+            </TableCell>
+            <TableCell>{formatJmd(fee.amountCents)}</TableCell>
+            <TableCell>{fee.firstName ? `${fee.firstName} ${fee.lastName}` : "All students"}</TableCell>
+            <TableCell>{fee.dueDate ? formatLongDate(fee.dueDate) : "—"}</TableCell>
+            <TableCell>
+              <DeleteButton action={deleteFee} id={fee.id} label="Remove" title="Remove this fee?" />
+            </TableCell>
+          </TableRow>
+        ))}
+      />
     </div>
   );
 }

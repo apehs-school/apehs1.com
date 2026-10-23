@@ -19,6 +19,7 @@ export function MessageBell({ alerts, emptyHref }: { alerts: MessageAlert[]; emp
     <div className="message-bell">
       <button
         type="button"
+        className={open ? "is-open" : undefined}
         aria-label={unread > 0 ? `${unread} new messages` : "Messages"}
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}

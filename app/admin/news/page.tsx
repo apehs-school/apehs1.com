@@ -23,6 +23,7 @@ export default async function NewsAdminPage() {
         endsOn: item.endsOn,
         pinned: item.pinned,
         published: item.published,
+        onCalendar: item.onCalendar,
         images: bulletinImageKeys(item.images).flatMap((key) => {
           const url = publicObjectUrl("images", key);
           return url ? [{ key, url }] : [];

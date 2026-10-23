@@ -1,11 +1,12 @@
-import { createActivity, deleteActivity, setActivityPublished, updateActivity } from "@/actions/admin";
+import { createActivity, deleteActivity, setActivityOnCalendar, setActivityPublished, updateActivity } from "@/actions/admin";
 import { ActivityDates } from "@/components/activity-dates";
 import { DeleteButton } from "@/components/delete-button";
 import { AdminField } from "@/components/admin-field";
 import { RecordDialog } from "@/components/record-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { getDb } from "@/db";
 import { activities } from "@/db/schema";
@@ -44,18 +45,20 @@ export default async function ActivityClubsPage() {
           <Textarea name="note" rows={3} className="text-base" />
         </AdminField>
       </RecordDialog>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Activity</TableHead>
-            <TableHead>Period</TableHead>
-            <TableHead>Schedule</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((item) => {
+      <PagedTable
+        pageKey="clubs"
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead>Activity</TableHead>
+              <TableHead>Period</TableHead>
+              <TableHead>Schedule</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+        }
+        rows={rows.map((item) => {
             const ended = item.endsOn < today;
             const tone = ended ? "bg-[#fde8e8] hover:bg-[#fde8e8]" : item.published ? "bg-[#e7f6ee] hover:bg-[#e7f6ee]" : "bg-[#fff1e0] hover:bg-[#fff1e0]";
             return (
@@ -98,14 +101,18 @@ export default async function ActivityClubsPage() {
                     <input type="hidden" name="published" value={item.published ? "false" : "true"} />
                     <Button variant="outline" type="submit">{item.published ? "Unpublish" : "Publish"}</Button>
                   </form>
+                  <form action={setActivityOnCalendar}>
+                    <input type="hidden" name="id" value={item.id} />
+                    <input type="hidden" name="onCalendar" value={item.onCalendar ? "false" : "true"} />
+                    <Button type="submit" variant={item.onCalendar ? "outline" : "default"}>{item.onCalendar ? "Remove from calendar" : "Publish on calendar"}</Button>
+                  </form>
                   <DeleteButton action={deleteActivity} id={item.id} />
                 </div>
               </TableCell>
             </TableRow>
             );
           })}
-        </TableBody>
-      </Table>
+      />
     </>
   );
 }

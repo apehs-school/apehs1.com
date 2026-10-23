@@ -841,6 +841,28 @@
   pointer-events: none;
 }
 
+.user-pager p {
+  margin: 0;
+}
+
+.user-pager button {
+  border: 0;
+  background: none;
+  color: #0d47a1;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.user-pager button:disabled {
+  color: #b7c0cc;
+  cursor: default;
+}
+
+.admin-paged {
+  width: 100%;
+}
+
 .user-view {
   display: inline-flex;
   align-items: center;

@@ -4,14 +4,15 @@ import { DeleteButton } from "@/components/delete-button";
 import { MessageChat } from "@/components/message-chat";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBackdrop, DialogPopup, DialogPortal, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { contactAddressParts, parseSocials } from "@/lib/contact";
 import { formatChatTime } from "@/lib/format";
 import { publicObjectUrl } from "@/lib/storage";
 import { getContactDetails, listContactMessages, listContactReplies } from "@/lib/queries";
 
-export default async function ContactAdminPage({ searchParams }: { searchParams: Promise<{ reply?: string; view?: string; tab?: string }> }) {
-  const { reply, view, tab } = await searchParams;
+export default async function ContactAdminPage({ searchParams }: { searchParams: Promise<{ reply?: string; view?: string; tab?: string; page?: string }> }) {
+  const { reply, view, tab, page } = await searchParams;
   const history = tab === "history";
   const focusId = view || reply;
   if (focusId) await markMessageOpened(focusId);
@@ -23,7 +24,15 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
     return !openedAt || fromSender.some((item) => !item.readAt);
   };
   const visible = messages.filter((message) => (history ? Boolean(message.deletedAt || message.resolvedAt) : !message.deletedAt && !message.resolvedAt));
-  const backHref = history ? "/admin/contact?tab=history" : "/admin/contact";
+  const href = (extra: Record<string, string> = {}) => {
+    const params = new URLSearchParams();
+    if (history) params.set("tab", "history");
+    if (page && page !== "1") params.set("page", page);
+    for (const [key, value] of Object.entries(extra)) params.set(key, value);
+    const text = params.toString();
+    return text ? `/admin/contact?${text}` : "/admin/contact";
+  };
+  const backHref = href();
   const openMessage = messages.find((message) => message.id === reply);
   const viewedMessage = messages.find((message) => message.id === view);
 
@@ -48,23 +57,25 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
           <a href="/admin/contact" aria-current={history ? undefined : "page"} className={`border-b-2 px-3 py-2 text-sm font-medium ${history ? "border-transparent text-[#24344d]" : "border-[#0d47a1] text-[#0d47a1]"}`}>Messages</a>
           <a href="/admin/contact?tab=history" aria-current={history ? "page" : undefined} className={`border-b-2 px-3 py-2 text-sm font-medium ${history ? "border-[#0d47a1] text-[#0d47a1]" : "border-transparent text-[#24344d]"}`}>Message history</a>
         </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>From</TableHead>
-              <TableHead>Subject</TableHead>
-              <TableHead>Message</TableHead>
-              <TableHead>Received</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {visible.length === 0 ? (
+        <PagedTable
+          pageKey="page"
+          header={
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={6}>{history ? "No message history yet." : "No messages yet."}</TableCell>
+                <TableHead>From</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Message</TableHead>
+                <TableHead>Received</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead />
               </TableRow>
-            ) : visible.map((message) => (
+            </TableHeader>
+          }
+          rows={visible.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6}>{history ? "No message history yet." : "No messages yet."}</TableCell>
+            </TableRow>
+          ) : visible.map((message) => (
               <TableRow key={message.id} className={!history && fresh(message.id, message.openedAt) ? "message-fresh" : undefined}>
                 <TableCell className="whitespace-normal">
                   <strong>{message.name}</strong>
@@ -105,8 +116,8 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
                         confirmVariant="default"
                       />
                     )}
-                    <Button variant="outline" nativeButton={false} render={<a href={`/admin/contact?tab=${history ? "history" : "messages"}&view=${message.id}`} />}>View</Button>
-                    <Button variant="outline" nativeButton={false} render={<a href={`/admin/contact?tab=${history ? "history" : "messages"}&reply=${message.id}`} />}>Response</Button>
+                    <Button variant="outline" nativeButton={false} render={<a href={href({ view: message.id })} />}>View</Button>
+                    <Button variant="outline" nativeButton={false} render={<a href={href({ reply: message.id })} />}>Response</Button>
                     <DeleteButton
                       action={history ? purgeContactMessage : deleteContactMessage}
                       id={message.id}
@@ -116,8 +127,7 @@ export default async function ContactAdminPage({ searchParams }: { searchParams:
                 </TableCell>
               </TableRow>
             ))}
-          </TableBody>
-        </Table>
+        />
       </div>
       {viewedMessage ? (
         <Dialog defaultOpen>

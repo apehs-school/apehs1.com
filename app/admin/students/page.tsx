@@ -4,7 +4,8 @@ import { AdminField, adminSelectClass } from "@/components/admin-field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { listGuardians, listStudents, listUsers } from "@/lib/queries";
 
 export default async function StudentsPage() {
@@ -58,28 +59,29 @@ export default async function StudentsPage() {
           </form>
         </CardContent>
       </Card>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Student</TableHead>
-            <TableHead>Grade</TableHead>
-            <TableHead>Parents</TableHead>
-            <TableHead />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {students.map((student) => (
-            <TableRow key={student.id}>
-              <TableCell>{student.firstName} {student.lastName}</TableCell>
-              <TableCell>{student.grade}</TableCell>
-              <TableCell>{links.filter((link) => link.studentId === student.id).map((link) => link.email).join(", ") || "—"}</TableCell>
-              <TableCell>
-                <DeleteButton action={deleteStudent} id={student.id} label="Remove" title="Remove this student?" />
-              </TableCell>
+      <PagedTable
+        pageKey="students"
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead>Student</TableHead>
+              <TableHead>Grade</TableHead>
+              <TableHead>Parents</TableHead>
+              <TableHead />
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+        }
+        rows={students.map((student) => (
+          <TableRow key={student.id}>
+            <TableCell>{student.firstName} {student.lastName}</TableCell>
+            <TableCell>{student.grade}</TableCell>
+            <TableCell>{links.filter((link) => link.studentId === student.id).map((link) => link.email).join(", ") || "—"}</TableCell>
+            <TableCell>
+              <DeleteButton action={deleteStudent} id={student.id} label="Remove" title="Remove this student?" />
+            </TableCell>
+          </TableRow>
+        ))}
+      />
     </div>
   );
 }

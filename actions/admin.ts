@@ -211,6 +211,18 @@ export async function setNewsPublished(formData: FormData) {
   revalidatePath("/admin/news");
 }
 
+export async function setNewsOnCalendar(formData: FormData) {
+  const db = await requireAdmin();
+  const id = clean(formData.get("id"));
+  if (!id) return;
+  const onCalendar = clean(formData.get("onCalendar")) === "true";
+  await db.update(news).set({ onCalendar }).where(eq(news.id, id));
+  await setNotice(onCalendar ? "Bulletin added to the calendar" : "Bulletin removed from the calendar");
+  revalidatePath("/calendar");
+  revalidatePath("/admin/calendar");
+  revalidatePath("/admin/news");
+}
+
 export async function deleteNews(formData: FormData) {
   const db = await requireAdmin();
   const id = clean(formData.get("id"));
@@ -961,6 +973,18 @@ export async function setActivityPublished(formData: FormData) {
   await db.update(activities).set({ published }).where(eq(activities.id, id));
   await setNotice(published ? "Published" : "Unpublished");
   revalidatePath("/extra");
+  revalidatePath("/admin/activities/clubs");
+}
+
+export async function setActivityOnCalendar(formData: FormData) {
+  const db = await requireAdmin();
+  const id = clean(formData.get("id"));
+  if (!id || id.startsWith("default-")) return;
+  const onCalendar = clean(formData.get("onCalendar")) === "true";
+  await db.update(activities).set({ onCalendar }).where(eq(activities.id, id));
+  await setNotice(onCalendar ? "Activity added to the calendar" : "Activity removed from the calendar");
+  revalidatePath("/calendar");
+  revalidatePath("/admin/calendar");
   revalidatePath("/admin/activities/clubs");
 }
 

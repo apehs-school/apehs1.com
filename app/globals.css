@@ -776,6 +776,15 @@ button.profile-action {
   box-shadow: inset 2px 0 0 #c9a227;
 }
 
+a.is-open,
+button.is-open,
+nav button[data-popup-open],
+nav button[aria-expanded="true"] {
+  border-bottom: 2px solid #c9a227;
+  background: #fff;
+  color: #0d47a1;
+}
+
 .about-page {
   background: #f4f6f8;
   color: #0b1f3a;
@@ -4880,4 +4889,417 @@ button.profile-action {
     animation: none;
     transition: none;
   }
+}
+
+.lawn-calendar {
+  display: grid;
+  grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+  grid-template-areas:
+    "key month"
+    "soon view";
+  gap: 0.75rem;
+  width: 100%;
+  max-width: none;
+  align-items: stretch;
+  border: 0;
+  background: transparent;
+}
+
+.lawn-legend { grid-area: key; }
+.lawn-upcoming { grid-area: soon; }
+.lawn-main { grid-area: month; }
+.lawn-selected { grid-area: view; }
+
+.lawn-legend,
+.lawn-upcoming,
+.lawn-main,
+.lawn-selected {
+  border: 1px solid #d9e0ea;
+  background: #fff;
+  min-width: 0;
+}
+
+.lawn-main { display: flex; flex-direction: column; }
+
+.lawn-board { flex: 1; }
+
+.lawn-calendar-banner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.95rem 1.1rem 0.85rem;
+  border-bottom: 3px solid #c9a227;
+  background: #0b1f3a;
+  color: #fff;
+}
+
+.lawn-calendar-banner p {
+  margin: 0;
+  color: #e6c15a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lawn-calendar-banner h2 {
+  margin: 0.15rem 0 0;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.lawn-calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.lawn-calendar-nav strong {
+  min-width: 9.5rem;
+  color: #fff;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.lawn-calendar-nav > button {
+  border: 1px solid rgb(255 255 255 / 35%);
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.4rem 0.7rem;
+}
+
+.lawn-calendar-nav > button:hover { background: rgb(255 255 255 / 10%); }
+
+.lawn-board {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border-bottom: 1px solid #e6ebf2;
+  animation: lawn-rise 0.35s ease both;
+}
+
+.lawn-board > span,
+.lawn-board > button {
+  min-height: 4.35rem;
+  border-right: 1px solid #e6ebf2;
+  border-bottom: 1px solid #e6ebf2;
+}
+
+.lawn-board > span:nth-child(7n),
+.lawn-board > button:nth-child(7n) { border-right: 0; }
+
+.lawn-board > span:not(.is-blank) {
+  display: grid;
+  min-height: 2.2rem;
+  place-items: center;
+  background: #f7f8fa;
+  color: #5c6b80;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lawn-board > span.is-blank { background: #fbfcfd; }
+
+.lawn-board > button {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.35rem;
+  border-top: 0;
+  border-left: 0;
+  background: #fff;
+  color: #0b1f3a;
+  cursor: pointer;
+  padding: 0.4rem 0.45rem 0.35rem;
+  text-align: left;
+}
+
+.lawn-board > button:hover { background: #f8f5ec; }
+
+.lawn-board > button b {
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.lawn-board > button[data-today="true"] b {
+  color: #8a6a1f;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.lawn-board > button.is-selected {
+  background: #f8f5ec;
+  box-shadow: inset 0 0 0 1px #0b1f3a;
+}
+
+.lawn-bars {
+  display: flex;
+  gap: 0.18rem;
+  width: 100%;
+  min-height: 0.28rem;
+}
+
+.lawn-bars i {
+  display: block;
+  width: 1.15rem;
+  height: 0.28rem;
+  flex: 0 0 auto;
+}
+
+.lawn-legend,
+.lawn-selected,
+.lawn-upcoming {
+  padding: 0.9rem 1rem 0.75rem;
+}
+
+.lawn-legend h3,
+.lawn-selected h3,
+.lawn-upcoming h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 0.15rem;
+  border-bottom: 1px solid #e6ebf2;
+  padding-bottom: 0.55rem;
+  color: #0b1f3a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lawn-legend ul,
+.lawn-upcoming ul {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0 0 0.6rem;
+  list-style: none;
+}
+
+.lawn-legend button,
+.lawn-upcoming button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.65rem;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid #e6ebf2;
+  background: transparent;
+  color: #0b1f3a;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  padding: 0.6rem 0.15rem;
+}
+
+.lawn-legend button span,
+.lawn-upcoming button span {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.lawn-legend strong,
+.lawn-upcoming strong {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.lawn-legend button:hover,
+.lawn-upcoming button:hover,
+.lawn-legend button.is-open,
+.lawn-upcoming button.is-open {
+  background: #f8f5ec;
+}
+
+.lawn-legend button.is-open,
+.lawn-upcoming button.is-open {
+  box-shadow: inset 3px 0 0 #c9a227;
+}
+
+.lawn-legend i,
+.lawn-upcoming i,
+.lawn-selected article p i {
+  display: block;
+  width: 0.65rem;
+  height: 0.65rem;
+  margin-top: 0.28rem;
+}
+
+.lawn-selected article p i { margin-top: 0; }
+
+.lawn-legend small,
+.lawn-upcoming small {
+  color: #6b7c93;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.lawn-selected h3 span {
+  color: #5c6b80;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.lawn-legend > p,
+.lawn-upcoming > p,
+.lawn-selected > p {
+  margin: 0.75rem 0 0.35rem;
+  color: #6b7c93;
+}
+
+.lawn-selected > div { display: grid; gap: 0.75rem; padding-bottom: 0.8rem; }
+
+.lawn-selected article {
+  border-top: 3px solid #0b1f3a;
+  background: #f8f9fb;
+  padding: 0.8rem 0.9rem 0.9rem;
+}
+
+.lawn-selected article p {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: #5c6b80;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lawn-selected h4 {
+  margin: 0.3rem 0 0;
+  color: #0b1f3a;
+  font-family: var(--font-serif), Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.lawn-selected time {
+  display: block;
+  margin-top: 0.15rem;
+  color: #5c6b80;
+  font-size: 0.82rem;
+}
+
+.lawn-selected pre {
+  max-height: 7.5rem;
+  margin: 0.45rem 0 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-family: inherit;
+  color: #24344d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.lawn-upcoming { padding-bottom: 1.1rem; }
+
+.lawn-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  border-top: 1px solid #e6ebf2;
+  padding-top: 0.55rem;
+}
+
+.lawn-pager span {
+  color: #5c6b80;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.lawn-pager button {
+  border: 0;
+  background: transparent;
+  color: #0d47a1;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.35rem 0;
+}
+
+.lawn-pager button:disabled {
+  cursor: default;
+  color: #b0bac6;
+}
+
+.calendar-admin { display: grid; gap: 1.25rem; }
+
+.calendar-admin-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.calendar-admin-head p { margin: 0.2rem 0 0; color: #6b7c93; }
+
+.calendar-admin-records h2 {
+  margin: 0 0 0.85rem;
+  border-bottom: 3px solid #c9a227;
+  background: #0b1f3a;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.7rem 0.9rem;
+}
+
+@keyframes lawn-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 900px) {
+  .lawn-calendar {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "month"
+      "view"
+      "key"
+      "soon";
+  }
+  .lawn-calendar-banner,
+  .calendar-admin-head { display: grid; }
+  .lawn-board > button,
+  .lawn-board > span { min-height: 3.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lawn-board { animation: none; }
 }

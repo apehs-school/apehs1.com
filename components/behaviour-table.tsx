@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBackdrop, DialogClose, DialogPopup, DialogPortal, DialogTitle } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { conflictOptions, disciplineOptions, emotionalOptions, helpOptions, socialOptions, type BehaviourAnswers } from "@/lib/behaviour";
 
 export type BehaviourRow = {
@@ -23,28 +24,29 @@ export function BehaviourTable({ rows }: { rows: BehaviourRow[] }) {
       <div className="awards-card-head">
         <h2>Behaviour assessments</h2>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Student</TableHead>
-            <TableHead>Last school</TableHead>
-            <TableHead>Received</TableHead>
-            <TableHead></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.length === 0 ? (
-            <TableRow><TableCell colSpan={4}>No behaviour assessments yet.</TableCell></TableRow>
-          ) : rows.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>{[row.lastName, row.firstName, row.middleName].filter(Boolean).join(" ")}</TableCell>
-              <TableCell>{row.lastSchool}</TableCell>
-              <TableCell>{received(row.createdAt)}</TableCell>
-              <TableCell><Button type="button" variant="outline" onClick={() => setOpen(row)}>View</Button></TableCell>
+      <PagedTable
+        pageKey="behaviour"
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead>Student</TableHead>
+              <TableHead>Last school</TableHead>
+              <TableHead>Received</TableHead>
+              <TableHead></TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+        }
+        rows={rows.length === 0 ? (
+          <TableRow><TableCell colSpan={4}>No behaviour assessments yet.</TableCell></TableRow>
+        ) : rows.map((row) => (
+          <TableRow key={row.id}>
+            <TableCell>{[row.lastName, row.firstName, row.middleName].filter(Boolean).join(" ")}</TableCell>
+            <TableCell>{row.lastSchool}</TableCell>
+            <TableCell>{received(row.createdAt)}</TableCell>
+            <TableCell><Button type="button" variant="outline" onClick={() => setOpen(row)}>View</Button></TableCell>
+          </TableRow>
+        ))}
+      />
       <Dialog open={Boolean(open)} onOpenChange={(value) => { if (!value) setOpen(null); }}>
         <DialogPortal>
           <DialogBackdrop />

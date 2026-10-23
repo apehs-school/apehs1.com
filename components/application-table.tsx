@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogBackdrop, DialogClose, DialogPopup, DialogPortal, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogBackdrop, AlertDialogClose, AlertDialogDescription, AlertDialogPopup, AlertDialogPortal, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatAdmissionUpdated } from "@/lib/admissions";
 import { admissionDocuments, parseDeclaration, parseDocuments, parseOffice, parsePerson, personStarted, type ApplicationOffice, type ApplicationPerson } from "@/lib/application-people";
 import { applicationEntryTypes } from "@/lib/applications";
@@ -52,7 +53,7 @@ export type ApplicationRow = {
   behaviour: string;
 };
 
-export function ApplicationTable({ rows, title = "Online applications" }: { rows: ApplicationRow[]; title?: string }) {
+export function ApplicationTable({ rows, title = "Online applications", pageKey = "applications" }: { rows: ApplicationRow[]; title?: string; pageKey?: string }) {
   const [records, setRecords] = useState(rows);
   const [preview, setPreview] = useState<ApplicationRow | null>(null);
   const [message, setMessage] = useState("");
@@ -97,38 +98,39 @@ export function ApplicationTable({ rows, title = "Online applications" }: { rows
         <h2>{title}</h2>
         {message ? <p role="status">{message}</p> : null}
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Number</TableHead>
-            <TableHead>Student</TableHead>
-            <TableHead>Year / grade</TableHead>
-            <TableHead>Entry</TableHead>
-            <TableHead>Received</TableHead>
-            <TableHead />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {records.length === 0 ? (
-            <TableRow><TableCell colSpan={6}>No online applications yet.</TableCell></TableRow>
-          ) : records.map((row) => (
-            <TableRow key={row.id}>
-              <TableCell>{String(row.submissionNumber).padStart(4, "0")}</TableCell>
-              <TableCell className="whitespace-normal"><strong>{row.firstName} {row.lastName}</strong></TableCell>
-              <TableCell className="whitespace-normal">{row.entryType === "behaviour" ? (row.gradeSeeking || "—") : `${row.academicYear}${row.gradeSeeking ? ` · ${row.gradeSeeking}` : ""}`}</TableCell>
-              <TableCell>{row.entryType === "behaviour" ? "Behaviour assessment" : applicationEntryTypes.find(([id]) => id === row.entryType)?.[1] ?? row.entryType}</TableCell>
-              <TableCell>{formatAdmissionUpdated(row.createdAt)}</TableCell>
-              <TableCell>
-                <div className="flex flex-wrap justify-end gap-2">
-                  <Button type="button" variant="outline" disabled={downloadingId === row.id} onClick={() => void download(row)}>{downloadingId === row.id ? "Preparing PDF…" : "Download PDF"}</Button>
-                  <Button type="button" variant="outline" onClick={() => setPreview(row)}>Preview</Button>
-                  <DeleteApplication onConfirm={() => remove(row.id)} />
-                </div>
-              </TableCell>
+      <PagedTable
+        pageKey={pageKey}
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead>Number</TableHead>
+              <TableHead>Student</TableHead>
+              <TableHead>Year / grade</TableHead>
+              <TableHead>Entry</TableHead>
+              <TableHead>Received</TableHead>
+              <TableHead />
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+        }
+        rows={records.length === 0 ? (
+          <TableRow><TableCell colSpan={6}>No online applications yet.</TableCell></TableRow>
+        ) : records.map((row) => (
+          <TableRow key={row.id}>
+            <TableCell>{String(row.submissionNumber).padStart(4, "0")}</TableCell>
+            <TableCell className="whitespace-normal"><strong>{row.firstName} {row.lastName}</strong></TableCell>
+            <TableCell className="whitespace-normal">{row.entryType === "behaviour" ? (row.gradeSeeking || "—") : `${row.academicYear}${row.gradeSeeking ? ` · ${row.gradeSeeking}` : ""}`}</TableCell>
+            <TableCell>{row.entryType === "behaviour" ? "Behaviour assessment" : applicationEntryTypes.find(([id]) => id === row.entryType)?.[1] ?? row.entryType}</TableCell>
+            <TableCell>{formatAdmissionUpdated(row.createdAt)}</TableCell>
+            <TableCell>
+              <div className="flex flex-wrap justify-end gap-2">
+                <Button type="button" variant="outline" disabled={downloadingId === row.id} onClick={() => void download(row)}>{downloadingId === row.id ? "Preparing PDF…" : "Download PDF"}</Button>
+                <Button type="button" variant="outline" onClick={() => setPreview(row)}>Preview</Button>
+                <DeleteApplication onConfirm={() => remove(row.id)} />
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      />
       <Dialog open={Boolean(preview)} onOpenChange={(open) => { if (!open) setPreview(null); }}>
         <DialogPortal>
           <DialogBackdrop />

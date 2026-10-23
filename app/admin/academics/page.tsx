@@ -9,7 +9,8 @@ import { DeleteButton } from "@/components/delete-button";
 import { RecordDialog } from "@/components/record-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getDb } from "@/db";
 import { pageEntries } from "@/db/schema";
 import { AdmissionsPanels } from "@/components/admissions-panels";
@@ -43,8 +44,8 @@ export default async function AcademicsAdminPage({ searchParams }: { searchParam
       {admissions && applications ? (
         <AdmissionsPanels
           records={<AdmissionsEditor initial={admissions.records} />}
-          applications={<ApplicationTable title="Online Student Admission Application" rows={applications.filter((row) => row.entryType !== "behaviour").map(toApplicationRow)} />}
-          behaviour={<ApplicationTable title="Online Student Behaviour Assessment" rows={applications.filter((row) => row.entryType === "behaviour").map(toApplicationRow)} />}
+          applications={<ApplicationTable title="Online Student Admission Application" pageKey="applications" rows={applications.filter((row) => row.entryType !== "behaviour").map(toApplicationRow)} />}
+          behaviour={<ApplicationTable title="Online Student Behaviour Assessment" pageKey="behaviour" rows={applications.filter((row) => row.entryType === "behaviour").map(toApplicationRow)} />}
         />
       ) : null}
       {scholarships ? <ScholarshipEditor initial={scholarships} /> : null}
@@ -97,17 +98,20 @@ function ProgramTable({ rows }: { rows: { id: string; title: string; body: strin
         </AdminField>
         <GradeLevelField />
       </RecordDialog>
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Subject</TableHead>
-            <TableHead>Grade level</TableHead>
-            <TableHead className="w-28">Status</TableHead>
-            <TableHead className="w-80" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.length === 0 ? (
+      <PagedTable
+        pageKey="programs"
+        tableClassName="table-fixed"
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead>Subject</TableHead>
+              <TableHead>Grade level</TableHead>
+              <TableHead className="w-28">Status</TableHead>
+              <TableHead className="w-80" />
+            </TableRow>
+          </TableHeader>
+        }
+        rows={rows.length === 0 ? (
             <TableRow>
               <TableCell colSpan={4}>No programs yet.</TableCell>
             </TableRow>
@@ -137,8 +141,7 @@ function ProgramTable({ rows }: { rows: { id: string; title: string; body: strin
               </TableCell>
             </TableRow>
           ))}
-        </TableBody>
-      </Table>
+      />
     </>
   );
 }

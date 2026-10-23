@@ -4,7 +4,8 @@ import { AdminField } from "@/components/admin-field";
 import { RecordDialog } from "@/components/record-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { getDb } from "@/db";
 import { devotionals } from "@/db/schema";
@@ -37,17 +38,19 @@ export default async function WordAdminPage() {
           <Textarea name="prayer" rows={6} className="text-base" required />
         </AdminField>
       </RecordDialog>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Period</TableHead>
-            <TableHead>Verse</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((item) => (
+      <PagedTable
+        pageKey="word"
+        header={
+          <TableHeader>
+            <TableRow>
+              <TableHead>Period</TableHead>
+              <TableHead>Verse</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead />
+            </TableRow>
+          </TableHeader>
+        }
+        rows={rows.map((item) => (
             <TableRow key={item.id}>
               <TableCell>
                 {formatLongDate(item.activeDate)} – {formatLongDate(item.endsOn)}
@@ -87,8 +90,7 @@ export default async function WordAdminPage() {
               </TableCell>
             </TableRow>
           ))}
-        </TableBody>
-      </Table>
+      />
     </>
   );
 }

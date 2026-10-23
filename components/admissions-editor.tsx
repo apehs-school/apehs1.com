@@ -6,7 +6,8 @@ import { adminSelectClass } from "@/components/admin-field";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { PagedTable } from "@/components/paged-table";
+import { TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogBackdrop, DialogClose, DialogPopup, DialogPortal, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogBackdrop, AlertDialogClose, AlertDialogDescription, AlertDialogPopup, AlertDialogPortal, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import {
@@ -182,7 +183,9 @@ export function AdmissionsEditor({ initial }: { initial: AdmissionRecord[] }) {
           <Button type="button" onClick={openNew} className="bg-[#0d47a1] text-white hover:bg-[#1565c0]">New draft</Button>
         </div>
         <div className="admission-table">
-          <Table>
+        <PagedTable
+          pageKey="records"
+          header={
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
@@ -193,8 +196,8 @@ export function AdmissionsEditor({ initial }: { initial: AdmissionRecord[] }) {
                 <TableHead />
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {records.length === 0 ? (
+          }
+          rows={records.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6}>No saved admission records yet.</TableCell>
                 </TableRow>
@@ -227,8 +230,7 @@ export function AdmissionsEditor({ initial }: { initial: AdmissionRecord[] }) {
                   </TableRow>
                 );
               })}
-            </TableBody>
-          </Table>
+        />
         </div>
       </section>
 
