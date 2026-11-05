@@ -5,10 +5,10 @@ import { bulletinImageKeys, getNewsItems } from "@/lib/queries";
 import { publicObjectUrl } from "@/lib/storage";
 
 const stats = [
-  ["96.2%", "Grade 6 average PEP results over a 5-year period"],
-  ["74%", "Overall pass rate for CSEC 2024"],
-  ["100%", "Grade 3 diagnostic test, 2024–2025"],
-  ["100%", "Grade 4 PEP literacy and numeracy"],
+  ["96.2%", "Grade 6 average PEP results over a 5-year period", "navy"],
+  ["74%", "Overall pass rate for CSEC 2024", "gold"],
+  ["100%", "Grade 3 diagnostic test, 2024–2025", "green"],
+  ["100%", "Grade 4 PEP literacy and numeracy", "teal"],
 ];
 
 export async function HomePageContent() {
@@ -63,12 +63,17 @@ export async function HomePageContent() {
         </div>
       </section>
 
-      <section className="border-b border-[#d9e0ea] bg-white">
-        <div className="mx-auto grid max-w-6xl md:grid-cols-4">
-          {stats.map(([value, label]) => (
-            <div key={label} className="border-[#e6ebf2] px-6 py-8 md:border-l md:first:border-l-0">
-              <p className="font-serif text-3xl text-[#0d47a1]">{value}</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">{label}</p>
+      <section className="stat-marquee" aria-label="School results">
+        <div className="stat-marquee-track">
+          {[0, 1].map((copy) => (
+            <div className="stat-marquee-set" key={copy} aria-hidden={copy === 1 ? true : undefined}>
+              {stats.map(([value, label, tone]) => (
+                <article className="stat-card" data-tone={tone} key={`${copy}-${label}`}>
+                  <span className="stat-mark" aria-hidden="true" />
+                  <p>{value}</p>
+                  <p>{label}</p>
+                </article>
+              ))}
             </div>
           ))}
         </div>
