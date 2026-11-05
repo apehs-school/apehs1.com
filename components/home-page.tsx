@@ -69,7 +69,6 @@ export async function HomePageContent() {
             <div className="stat-marquee-set" key={copy} aria-hidden={copy === 1 ? true : undefined}>
               {stats.map(([value, label, tone]) => (
                 <article className="stat-card" data-tone={tone} key={`${copy}-${label}`}>
-                  <span className="stat-mark" aria-hidden="true" />
                   <p>{value}</p>
                   <p>{label}</p>
                 </article>

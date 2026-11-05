@@ -5338,40 +5338,28 @@ nav button[aria-expanded="true"] {
   padding: 1.15rem 1.25rem 1.2rem;
 }
 
-.stat-mark {
-  display: block;
-  width: 2.35rem;
-  height: 2.35rem;
-  margin-bottom: 0.75rem;
-  border-radius: 999px;
-}
-
 .stat-card[data-tone="navy"] {
   border-color: #c5d4ea;
   background: linear-gradient(180deg, #e7f0fb 0%, #fff 58%);
 }
-.stat-card[data-tone="navy"] .stat-mark { background: linear-gradient(135deg, #0d47a1, #64b5f6); }
 .stat-card[data-tone="navy"] p:first-child { color: #0d47a1; }
 
 .stat-card[data-tone="gold"] {
   border-color: #ead9a4;
   background: linear-gradient(180deg, #fbf4df 0%, #fff 58%);
 }
-.stat-card[data-tone="gold"] .stat-mark { background: linear-gradient(135deg, #a6843d, #f6e27a); }
 .stat-card[data-tone="gold"] p:first-child { color: #8a6a1f; }
 
 .stat-card[data-tone="green"] {
   border-color: #b7e0c8;
   background: linear-gradient(180deg, #e5f6ec 0%, #fff 58%);
 }
-.stat-card[data-tone="green"] .stat-mark { background: linear-gradient(135deg, #1b6b4a, #81c784); }
 .stat-card[data-tone="green"] p:first-child { color: #1b6b4a; }
 
 .stat-card[data-tone="teal"] {
   border-color: #b7d7e3;
   background: linear-gradient(180deg, #e4f4f8 0%, #fff 58%);
 }
-.stat-card[data-tone="teal"] .stat-mark { background: linear-gradient(135deg, #146c8a, #4fc3f7); }
 .stat-card[data-tone="teal"] p:first-child { color: #146c8a; }
 
 .stat-card p:first-child {
